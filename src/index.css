@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: #eef1ec;
+}
+
+body {
+  @apply bg-paper text-text-ink font-sans antialiased;
+}
+
+/* Ledger-style tabular figures for every money amount in the app */
+.figure {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ledger-rule {
+  height: 1px;
+  background-image: repeating-linear-gradient(90deg, #d8dbd3 0, #d8dbd3 6px, transparent 6px, transparent 12px);
+}
+
+::selection {
+  background-color: #c9a24b;
+  color: #152420;
+}
+
+:focus-visible {
+  outline: 2px solid #1f5c52;
+  outline-offset: 2px;
+}

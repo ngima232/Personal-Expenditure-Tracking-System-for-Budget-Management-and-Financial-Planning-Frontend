@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+
+logs
+.yarnrc.yml
+.yarn
+.yarn.lock
+*lock.json
+.serverless
+.query.json
+.vscode
+dump.rdb
+http
+.build
+public
+
