@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2, Eye, Wallet } from 'lucide-react';
 import { savingsGoalsApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput } from '../utils/format';
 import { Button, Card, Field, Input, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
-const emptyForm = { title: '',description:'', targetAmount: '', targetDate: '', icon: '' };
+const emptyForm = { title: '', description: '', targetAmount: '', targetDate: '', icon: '' };
 const emptyContribution = { amount: '', note: '' };
 
 export default function SavingsGoals() {
@@ -18,6 +18,9 @@ export default function SavingsGoals() {
   const [contributeOpen, setContributeOpen] = useState(false);
   const [contributeTarget, setContributeTarget] = useState(null);
   const [contribution, setContribution] = useState(emptyContribution);
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsTarget, setDetailsTarget] = useState(null);
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -49,7 +52,7 @@ export default function SavingsGoals() {
     setEditing(g);
     setForm({
       title: g.title,
-      description: g.description,
+      description: g.description || '',
       targetAmount: g.targetAmount,
       targetDate: g.targetDate ? formatDateInput(g.targetDate) : '',
       icon: g.icon || '',
@@ -102,6 +105,7 @@ export default function SavingsGoals() {
     try {
       await savingsGoalsApi.contribute(contributeTarget._id, {
         amount: parseFloat(contribution.amount),
+        date: contribution.date ? formatDateInput(contribution.date) : '',
         note: contribution.note || undefined,
       });
       setContributeOpen(false);
@@ -112,6 +116,19 @@ export default function SavingsGoals() {
       setSaving(false);
     }
   };
+
+  const openDetails = (g) => {
+    setDetailsTarget(g);
+    setDetailsOpen(true);
+  };
+
+  // Keeps the "View details" modal in sync after a contribution is added
+  // or the goal list is refreshed elsewhere.
+  useEffect(() => {
+    if (!detailsTarget) return;
+    const latest = goals.find((g) => g._id === detailsTarget._id);
+    if (latest) setDetailsTarget(latest);
+  }, [goals]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -175,11 +192,16 @@ export default function SavingsGoals() {
                   {g.targetDate && <span>Target {formatDate(g.targetDate)}</span>}
                 </div>
 
-                {!completed && (
-                  <Button variant="gold" className="mt-4 w-full" onClick={() => openContribute(g)}>
-                    Add contribution
+                <div className="mt-4 flex gap-2">
+                  <Button variant="ghost" className="flex-1 border border-line" onClick={() => openDetails(g)}>
+                    <Eye size={15} /> View details
                   </Button>
-                )}
+                  {!completed && (
+                    <Button variant="gold" className="flex-1" onClick={() => openContribute(g)}>
+                      Add contribution
+                    </Button>
+                  )}
+                </div>
               </Card>
             );
           })}
@@ -213,25 +235,14 @@ export default function SavingsGoals() {
             </Field>
           </div>
 
-          <div className="grid  gap-4">
-            <Field label="Description">
-                <Input
-              placeholder="description…"
-              value={form.description}
-               onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-            </Field>
-            
-          </div>
-          {/* <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+          <Field label="Description">
             <Input
-              className="pl-9"
-              placeholder="Search description…"
-              value={filters.query}
-              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+              placeholder="What is this goal for?"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
-          </div> */}
+          </Field>
+
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Cancel
@@ -246,7 +257,23 @@ export default function SavingsGoals() {
       <Modal open={contributeOpen} onClose={() => setContributeOpen(false)} title={`Contribute to ${contributeTarget?.title || ''}`}>
         <form onSubmit={handleContribute} className="space-y-4">
           <ErrorBanner message={error} />
-          <Field label="Amount">
+          {/* "yaha" */}
+           <div className="grid grid-cols-2 gap-4">
+            <Field label="Amount">
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                required
+                value={contribution.amount}
+                onChange={(e) => setContribution({ ...contribution, amount: e.target.value })}
+              />
+            </Field>
+            <Field label="date">
+              <Input type="date"   value={contribution.date} onChange={(e) => setContribution({ ...contribution, date: e.target.value })} />
+            </Field>
+          </div>
+          {/* <Field label="Amount">
             <Input
               type="number"
               step="0.01"
@@ -255,7 +282,7 @@ export default function SavingsGoals() {
               value={contribution.amount}
               onChange={(e) => setContribution({ ...contribution, amount: e.target.value })}
             />
-          </Field>
+          </Field> */}
           <Field label="Note (optional)">
             <Input
               value={contribution.note}
@@ -272,6 +299,79 @@ export default function SavingsGoals() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={detailsOpen} onClose={() => setDetailsOpen(false)} title={detailsTarget?.title || 'Goal details'}>
+        {detailsTarget && (
+          <div className="space-y-5">
+            {detailsTarget.description && (
+              <p className="text-sm text-text-muted">{detailsTarget.description}</p>
+            )}
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Saved so far</p>
+                <p className="figure mt-1 text-base text-text-ink">{formatCurrency(detailsTarget.currentAmount)}</p>
+              </div>
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Target</p>
+                <p className="figure mt-1 text-base text-text-ink">{formatCurrency(detailsTarget.targetAmount)}</p>
+              </div>
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Status</p>
+                <p className="mt-1 text-base capitalize text-text-ink">{(detailsTarget.status || 'in_progress').replace('_', ' ')}</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="flex items-center gap-1.5 font-display text-sm text-text-ink">
+                  <Wallet size={15} /> Contribution history
+                </p>
+                <span className="text-xs text-text-muted">
+                  {detailsTarget.contributions?.length || 0} total
+                </span>
+              </div>
+
+              {!detailsTarget.contributions || detailsTarget.contributions.length === 0 ? (
+                <p className="rounded-sm border border-dashed border-line py-6 text-center text-sm text-text-muted">
+                  No contributions logged yet.
+                </p>
+              ) : (
+                <div className="max-h-64 divide-y divide-line overflow-y-auto rounded-sm border border-line">
+                  {[...detailsTarget.contributions]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map((c, i) => (
+                      <div key={i} className="flex items-center justify-between px-3 py-2.5">
+                        <div>
+                          <p className="text-sm text-text-ink">{formatDate(c.date)}</p>
+                          {c.note && <p className="mt-0.5 text-xs text-text-muted">{c.note}</p>}
+                        </div>
+                        <span className="figure text-sm text-income">+{formatCurrency(c.amount)}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button type="button" variant="ghost" onClick={() => setDetailsOpen(false)}>
+                Close
+              </Button>
+              {detailsTarget.status !== 'completed' && (
+                <Button
+                  variant="gold"
+                  onClick={() => {
+                    setDetailsOpen(false);
+                    openContribute(detailsTarget);
+                  }}
+                >
+                  Add contribution
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
