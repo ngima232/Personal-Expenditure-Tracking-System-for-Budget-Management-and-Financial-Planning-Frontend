@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (payload) => {
     const res = await authApi.register(payload);
-    return applySession(res);
+   // return applySession(res);
   }, []);
 
   const logout = useCallback(() => {

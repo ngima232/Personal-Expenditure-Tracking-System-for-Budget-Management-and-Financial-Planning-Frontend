@@ -4,7 +4,7 @@ import { savingsGoalsApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput } from '../utils/format';
 import { Button, Card, Field, Input, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
-const emptyForm = { title: '', targetAmount: '', targetDate: '', icon: '' };
+const emptyForm = { title: '',description:'', targetAmount: '', targetDate: '', icon: '' };
 const emptyContribution = { amount: '', note: '' };
 
 export default function SavingsGoals() {
@@ -49,6 +49,7 @@ export default function SavingsGoals() {
     setEditing(g);
     setForm({
       title: g.title,
+      description: g.description,
       targetAmount: g.targetAmount,
       targetDate: g.targetDate ? formatDateInput(g.targetDate) : '',
       icon: g.icon || '',
@@ -211,6 +212,26 @@ export default function SavingsGoals() {
               <Input type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
             </Field>
           </div>
+
+          <div className="grid  gap-4">
+            <Field label="Description">
+                <Input
+              placeholder="description…"
+              value={form.description}
+               onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+            </Field>
+            
+          </div>
+          {/* <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+            <Input
+              className="pl-9"
+              placeholder="Search description…"
+              value={filters.query}
+              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+            />
+          </div> */}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Cancel

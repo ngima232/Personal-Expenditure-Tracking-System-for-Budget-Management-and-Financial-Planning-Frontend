@@ -16,7 +16,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form);
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       setError(err.message || 'Unable to create account.');
     } finally {
@@ -56,7 +56,7 @@ export default function Register() {
               <Input
                 type="password"
                 required
-                minLength={8}
+                minLength={6}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="At least 8 characters"

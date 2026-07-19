@@ -41,8 +41,8 @@ function AppLayout() {
     <div className="flex min-h-screen bg-paper">
       <aside className="flex w-60 shrink-0 flex-col bg-ink text-paper-card">
         <div className="px-6 py-6">
-          <p className="font-display text-xl font-medium tracking-tight text-paper-card">Ledger</p>
-          <p className="mt-0.5 text-xs text-paper-card/50">Personal Expenditure Tracker</p>
+          <p className="font-display text-xl font-medium tracking-tight text-paper-card">PETS</p>
+          <p className="mt-0.5 text-xs text-paper-card/50">Personal Expenditure Tracking System</p>
         </div>
 
         <nav className="mt-2 flex-1 px-3">
