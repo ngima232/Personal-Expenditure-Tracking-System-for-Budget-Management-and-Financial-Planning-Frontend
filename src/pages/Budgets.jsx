@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, AlertTriangle, Eye, Receipt } from 'lucide-react';
 import { budgetsApi, categoriesApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput, titleCase } from '../utils/format';
-import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner } from '../components/ui';
+import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, TextArea } from '../components/ui';
 
 const emptyForm = {
+  name: '',
   category: '',
   limitAmount: '',
   period: 'monthly',
   startDate: formatDateInput(),
   endDate: formatDateInput(new Date(new Date().setMonth(new Date().getMonth() + 1))),
   alertThreshold: 80,
+  description: '',
 };
 
 export default function Budgets() {
@@ -23,6 +25,9 @@ export default function Budgets() {
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsBudget, setDetailsBudget] = useState(null);
 
   const loadCategories = async () => {
     const res = await categoriesApi.list({ limit: 100, type: 'expense', page: 1 });
@@ -69,12 +74,14 @@ export default function Budgets() {
   const openEdit = (b) => {
     setEditing(b);
     setForm({
+      name: b.name || '',
       category: b.category?._id || b.category,
       limitAmount: b.limitAmount,
       period: b.period,
       startDate: formatDateInput(b.startDate),
       endDate: formatDateInput(b.endDate),
       alertThreshold: b.alertThreshold,
+      description: b.description || '',
     });
     setError('');
     setModalOpen(true);
@@ -105,6 +112,15 @@ export default function Budgets() {
     await budgetsApi.remove(id);
     loadBudgets();
   };
+
+  // Status (spent/remaining/transactions) is already fetched for every budget
+  // in loadBudgets(), so details just reuses that instead of a fresh request.
+  const openDetails = (b) => {
+    setDetailsBudget(b);
+    setDetailsOpen(true);
+  };
+
+  const detailsStatus = detailsBudget ? statuses[detailsBudget._id] : null;
 
   return (
     <div>
@@ -138,12 +154,15 @@ export default function Budgets() {
               <Card key={b._id}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-display text-base text-text-ink">{b.category?.name || 'Category'}</p>
+                    <p className="font-display text-base text-text-ink">{b.name || b.category?.name || 'Budget'}</p>
                     <p className="mt-0.5 text-xs text-text-muted">
-                      {titleCase(b.period)} · {formatDate(b.startDate)} – {formatDate(b.endDate)}
+                      {b.category?.name} · {titleCase(b.period)} · {formatDate(b.startDate)} – {formatDate(b.endDate)}
                     </p>
                   </div>
                   <div className="flex gap-1">
+                    <button onClick={() => openDetails(b)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
+                      <Eye size={15} />
+                    </button>
                     <button onClick={() => openEdit(b)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
                       <Pencil size={15} />
                     </button>
@@ -170,6 +189,10 @@ export default function Budgets() {
                     <AlertTriangle size={13} /> Over budget
                   </p>
                 )}
+
+                <Button variant="ghost" className="mt-4 w-full border border-line" onClick={() => openDetails(b)}>
+                  <Eye size={15} /> View details
+                </Button>
               </Card>
             );
           })}
@@ -179,6 +202,10 @@ export default function Budgets() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit budget' : 'New budget'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <ErrorBanner message={error} />
+          <Field label="Name">
+            <Input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Groceries — July" />
+          </Field>
+
           <Field label="Category">
             <Select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
               <option value="">Select a category</option>
@@ -229,6 +256,15 @@ export default function Budgets() {
             />
           </Field>
 
+          <Field label="Description">
+            <TextArea
+              rows={2}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Optional note"
+            />
+          </Field>
+
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Cancel
@@ -238,6 +274,87 @@ export default function Budgets() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={detailsOpen} onClose={() => setDetailsOpen(false)} title={detailsBudget?.name || detailsBudget?.category?.name || 'Budget details'}>
+        {detailsBudget && (
+          <div className="space-y-5">
+            {detailsBudget.description && <p className="text-sm text-text-muted">{detailsBudget.description}</p>}
+
+            <div className="grid grid-cols-2 gap-3 text-xs text-text-muted">
+              <div>
+                <span className="block text-text-faint">Category</span>
+                <span className="text-text-ink">{detailsBudget.category?.name}</span>
+              </div>
+              <div>
+                <span className="block text-text-faint">Period</span>
+                <span className="text-text-ink">
+                  {titleCase(detailsBudget.period)} · {formatDate(detailsBudget.startDate)} – {formatDate(detailsBudget.endDate)}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Spent</p>
+                <p className={`figure mt-1 text-base ${detailsStatus?.isExceeded ? 'text-expense' : 'text-text-ink'}`}>
+                  {formatCurrency(detailsStatus?.spent ?? 0)}
+                </p>
+              </div>
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Remaining</p>
+                <p className="figure mt-1 text-base text-text-ink">{formatCurrency(detailsStatus?.remaining ?? 0)}</p>
+              </div>
+              <div className="rounded-sm border border-line bg-paper px-3 py-2.5">
+                <p className="text-xs text-text-muted">Limit</p>
+                <p className="figure mt-1 text-base text-text-ink">{formatCurrency(detailsBudget.limitAmount)}</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="flex items-center gap-1.5 font-display text-sm text-text-ink">
+                  <Receipt size={15} /> Spending breakdown
+                </p>
+                <span className="text-xs text-text-muted">{detailsStatus?.transactionCount ?? 0} transactions</span>
+              </div>
+
+              {!detailsStatus?.transactions || detailsStatus.transactions.length === 0 ? (
+                <p className="rounded-sm border border-dashed border-line py-6 text-center text-sm text-text-muted">
+                  No expenses logged against this budget yet.
+                </p>
+              ) : (
+                <div className="max-h-64 divide-y divide-line overflow-y-auto rounded-sm border border-line">
+                  {detailsStatus.transactions.map((t) => (
+                    <div key={t._id} className="flex items-center justify-between px-3 py-2.5">
+                      <div>
+                        <p className="text-sm text-text-ink">{t.description || 'Expense'}</p>
+                        <p className="mt-0.5 text-xs text-text-muted">
+                          {formatDate(t.date)} · {titleCase(t.paymentMethod || '')}
+                        </p>
+                      </div>
+                      <span className="figure text-sm text-expense">−{formatCurrency(t.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button type="button" variant="ghost" onClick={() => setDetailsOpen(false)}>
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  setDetailsOpen(false);
+                  openEdit(detailsBudget);
+                }}
+              >
+                Edit budget
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2, Eye, Wallet } from 'lucide-react';
 import { savingsGoalsApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput } from '../utils/format';
-import { Button, Card, Field, Input, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
+import { Button, Card, Field, Input, Modal, Spinner, EmptyState, ErrorBanner, Badge,TextArea } from '../components/ui';
 
 const emptyForm = { title: '', description: '', targetAmount: '', targetDate: '', icon: '' };
 const emptyContribution = { amount: '', note: '' };
@@ -235,13 +235,15 @@ export default function SavingsGoals() {
             </Field>
           </div>
 
-          <Field label="Description">
-            <Input
-              placeholder="What is this goal for?"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </Field>
+           <Field label="Description">
+                                  <TextArea
+                                    rows={2}
+                                    value={form.description}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                    placeholder="What is this goal for?"
+                                  />
+                                </Field>
+          
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
@@ -257,7 +259,6 @@ export default function SavingsGoals() {
       <Modal open={contributeOpen} onClose={() => setContributeOpen(false)} title={`Contribute to ${contributeTarget?.title || ''}`}>
         <form onSubmit={handleContribute} className="space-y-4">
           <ErrorBanner message={error} />
-          {/* "yaha" */}
            <div className="grid grid-cols-2 gap-4">
             <Field label="Amount">
               <Input
@@ -273,16 +274,6 @@ export default function SavingsGoals() {
               <Input type="date"   value={contribution.date} onChange={(e) => setContribution({ ...contribution, date: e.target.value })} />
             </Field>
           </div>
-          {/* <Field label="Amount">
-            <Input
-              type="number"
-              step="0.01"
-              min="0.01"
-              required
-              value={contribution.amount}
-              onChange={(e) => setContribution({ ...contribution, amount: e.target.value })}
-            />
-          </Field> */}
           <Field label="Note (optional)">
             <Input
               value={contribution.note}
