@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { transactionsApi, categoriesApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput, titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, TextArea, Modal, Badge, Spinner, EmptyState, ErrorBanner } from '../components/ui';
 
 const PAYMENT_METHODS = ['cash', 'card', 'bank_transfer', 'mobile_wallet', 'other'];
+const PAGE_SIZE = 15;
 
 const emptyForm = {
   type: 'expense',
@@ -15,16 +16,60 @@ const emptyForm = {
   date: formatDateInput(),
 };
 
+
+function toCsvCell(value) {
+  const str = String(value ?? '');
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function downloadCsv(rows, filename) {
+  const header = ['Date', 'Type', 'Category', 'Description', 'Payment Method', 'Amount'];
+  const lines = [
+    header.join(','),
+    ...rows.map((t) =>
+      [
+        formatDateInput(t.date),
+        titleCase(t.type),
+        t.category?.name || '',
+        t.description || '',
+        titleCase(t.paymentMethod || ''),
+        t.amount,
+      ]
+        .map(toCsvCell)
+        .join(',')
+    ),
+  ];
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export default function Transactions() {
   const [rows, setRows] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ query: '', type: '', category: '' });
+
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState(null);
+  const [count, setCount] = useState(0);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const loadCategories = async () => {
     const res = await categoriesApi.list({ limit: 100, page: 1 });
@@ -35,8 +80,8 @@ export default function Transactions() {
     setLoading(true);
     try {
       const res = await transactionsApi.list({
-        limit: 50,
-        page: 1,
+        limit: PAGE_SIZE,
+        page,
         sort: 'date',
         order: 'desc',
         query: filters.query || undefined,
@@ -44,6 +89,8 @@ export default function Transactions() {
         category: filters.category || undefined,
       });
       setRows(res.data?.rows || []);
+      setCount(res.data?.count || 0);
+      setMetadata(res.metadata || null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,11 +102,16 @@ export default function Transactions() {
     loadCategories();
   }, []);
 
+  // Any filter change should reset back to page 1, not stay on a page that may no longer exist.
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
   useEffect(() => {
     const timeout = setTimeout(loadTransactions, 300);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, page]);
 
   const openCreate = () => {
     setEditing(null);
@@ -108,7 +160,34 @@ export default function Transactions() {
     loadTransactions();
   };
 
+  
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await transactionsApi.list({
+        limit: Math.max(count, 1),
+        page: 1,
+        sort: 'date',
+        order: 'desc',
+        query: filters.query || undefined,
+        type: filters.type || undefined,
+        category: filters.category || undefined,
+      });
+      const allRows = res.data?.rows || [];
+      if (allRows.length === 0) return;
+      downloadCsv(allRows, `transactions-${formatDateInput()}.csv`);
+    } catch (err) {
+      console.error(err);
+      alert('Unable to export transactions right now.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const filteredCategories = categories.filter((c) => !form.type || c.type === form.type);
+  const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
+  const rangeStart = count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, count);
 
   return (
     <div>
@@ -117,9 +196,14 @@ export default function Transactions() {
           <h1 className="font-display text-2xl text-text-ink">Transactions</h1>
           <p className="text-sm text-text-muted">Every income and expense, in one ledger.</p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus size={16} /> Add transaction
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" className="border border-line" onClick={handleExport} disabled={exporting || count === 0}>
+            <Download size={16} /> {exporting ? 'Exporting…' : 'Export CSV'}
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus size={16} /> Add transaction
+          </Button>
+        </div>
       </div>
 
       <Card className="mb-6">
@@ -161,33 +245,61 @@ export default function Transactions() {
             action={<Button onClick={openCreate}>Add transaction</Button>}
           />
         ) : (
-          <div className="divide-y divide-line">
-            {rows.map((t) => (
-              <div key={t._id} className="group flex items-center justify-between py-3">
-                <div className="flex-1">
-                  <p className="text-sm text-text-ink">{t.description || t.category?.name}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
-                    {formatDate(t.date)} · {t.category?.name} · {titleCase(t.paymentMethod || '')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Badge tone={t.type === 'income' ? 'income' : 'expense'}>{titleCase(t.type)}</Badge>
-                  <span className={`figure w-28 text-right text-sm ${t.type === 'income' ? 'text-income' : 'text-expense'}`}>
-                    {t.type === 'income' ? '+' : '−'}
-                    {formatCurrency(t.amount)}
-                  </span>
-                  <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button onClick={() => openEdit(t)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
-                      <Pencil size={15} />
-                    </button>
-                    <button onClick={() => handleDelete(t._id)} className="rounded-sm p-1.5 text-text-muted hover:bg-expense/10 hover:text-expense">
-                      <Trash2 size={15} />
-                    </button>
+          <>
+            <div className="divide-y divide-line">
+              {rows.map((t) => (
+                <div key={t._id} className="group flex items-center justify-between py-3">
+                  <div className="flex-1">
+                    <p className="text-sm text-text-ink">{t.description || t.category?.name}</p>
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      {formatDate(t.date)} · {t.category?.name} · {titleCase(t.paymentMethod || '')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Badge tone={t.type === 'income' ? 'income' : 'expense'}>{titleCase(t.type)}</Badge>
+                    <span className={`figure w-28 text-right text-sm ${t.type === 'income' ? 'text-income' : 'text-expense'}`}>
+                      {t.type === 'income' ? '+' : '−'}
+                      {formatCurrency(t.amount)}
+                    </span>
+                    <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button onClick={() => openEdit(t)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
+                        <Pencil size={15} />
+                      </button>
+                      <button onClick={() => handleDelete(t._id)} className="rounded-sm p-1.5 text-text-muted hover:bg-expense/10 hover:text-expense">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
+              <p className="text-xs text-text-muted">
+                Showing <span className="figure">{rangeStart}</span>–<span className="figure">{rangeEnd}</span> of{' '}
+                <span className="figure">{count}</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={!metadata?.previousPage}
+                  className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+                >
+                  <ChevronLeft size={14} /> Prev
+                </button>
+                <span className="figure text-xs text-text-muted">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={!metadata?.nextPage}
+                  className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+                >
+                  Next <ChevronRight size={14} />
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
       </Card>
 
