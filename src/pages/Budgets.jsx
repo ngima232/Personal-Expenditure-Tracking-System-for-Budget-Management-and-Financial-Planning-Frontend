@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, AlertTriangle, Eye, Receipt } from 'lucide-react';
+import { Plus, Pencil, Trash2, AlertTriangle, Eye, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
 import { budgetsApi, categoriesApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput, titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, TextArea } from '../components/ui';
+
+const PAGE_SIZE = 8;
 
 const emptyForm = {
   name: '',
@@ -26,6 +28,10 @@ export default function Budgets() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState(null);
+  const [count, setCount] = useState(0);
+
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsBudget, setDetailsBudget] = useState(null);
 
@@ -37,9 +43,11 @@ export default function Budgets() {
   const loadBudgets = async () => {
     setLoading(true);
     try {
-      const res = await budgetsApi.list({ limit: 50, page: 1, sort: 'startDate', order: 'desc' });
+      const res = await budgetsApi.list({ limit: PAGE_SIZE, page, sort: 'startDate', order: 'desc' });
       const rows = res.data?.rows || [];
       setBudgets(rows);
+      setCount(res.data?.count || 0);
+      setMetadata(res.metadata || null);
 
       const statusEntries = await Promise.all(
         rows.map(async (b) => {
@@ -61,8 +69,12 @@ export default function Budgets() {
 
   useEffect(() => {
     loadCategories();
-    loadBudgets();
   }, []);
+
+  useEffect(() => {
+    loadBudgets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const openCreate = () => {
     setEditing(null);
@@ -99,7 +111,12 @@ export default function Budgets() {
         await budgetsApi.create(payload);
       }
       setModalOpen(false);
-      loadBudgets();
+      if (!editing) {
+        if (page === 1) loadBudgets();
+        else setPage(1);
+      } else {
+        loadBudgets();
+      }
     } catch (err) {
       setError(err.message || 'Unable to save budget.');
     } finally {
@@ -110,11 +127,14 @@ export default function Budgets() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this budget?')) return;
     await budgetsApi.remove(id);
-    loadBudgets();
+    if (budgets.length === 1 && page > 1) {
+      setPage((p) => p - 1);
+    } else {
+      loadBudgets();
+    }
   };
 
-  // Status (spent/remaining/transactions) is already fetched for every budget
-  // in loadBudgets(), so details just reuses that instead of a fresh request.
+ 
   const openDetails = (b) => {
     setDetailsBudget(b);
     setDetailsOpen(true);
@@ -145,8 +165,9 @@ export default function Budgets() {
           action={<Button onClick={openCreate}>New budget</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {budgets.map((b) => {
+        <>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {budgets.map((b) => {
             const status = statuses[b._id];
             const percent = Math.min(status?.percentUsed ?? 0, 100);
             const isExceeded = status?.isExceeded;
@@ -196,7 +217,34 @@ export default function Budgets() {
               </Card>
             );
           })}
-        </div>
+          </div>
+
+          <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+            <p className="text-xs text-text-muted">
+              Showing <span className="figure">{budgets.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}</span>–
+              <span className="figure">{Math.min(page * PAGE_SIZE, count)}</span> of <span className="figure">{count}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={!metadata?.previousPage}
+                className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+              >
+                <ChevronLeft size={14} /> Prev
+              </button>
+              <span className="figure text-xs text-text-muted">
+                Page {page} of {Math.max(Math.ceil(count / PAGE_SIZE), 1)}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, Math.max(Math.ceil(count / PAGE_SIZE), 1)))}
+                disabled={!metadata?.nextPage}
+                className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit budget' : 'New budget'}>

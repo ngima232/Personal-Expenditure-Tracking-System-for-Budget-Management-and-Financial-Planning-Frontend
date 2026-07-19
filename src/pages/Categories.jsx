@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { categoriesApi } from '../api';
 import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
+const PAGE_SIZE = 12;
 const emptyForm = { name: '', type: 'expense', icon: '', color: '#1F5C52' };
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('expense');
+
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState(null);
+  const [count, setCount] = useState(0);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -18,8 +24,10 @@ export default function Categories() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await categoriesApi.list({ limit: 100, page: 1 });
+      const res = await categoriesApi.list({ limit: PAGE_SIZE, page, type: tab });
       setCategories(res.data?.rows || []);
+      setCount(res.data?.count || 0);
+      setMetadata(res.metadata || null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -29,7 +37,15 @@ export default function Categories() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, page]);
+
+  // Switching tabs should always land back on page 1, since the previous
+  // page number likely doesn't exist for the other type's result set.
+  const changeTab = (t) => {
+    setTab(t);
+    setPage(1);
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -56,7 +72,12 @@ export default function Categories() {
         await categoriesApi.create(form);
       }
       setModalOpen(false);
-      load();
+      if (!editing) {
+        if (page === 1) load();
+        else setPage(1);
+      } else {
+        load();
+      }
     } catch (err) {
       setError(err.message || 'Unable to save category.');
     } finally {
@@ -67,10 +88,14 @@ export default function Categories() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this category?')) return;
     await categoriesApi.remove(id);
-    load();
+    if (categories.length === 1 && page > 1) {
+      setPage((p) => p - 1);
+    } else {
+      load();
+    }
   };
 
-  const filtered = categories.filter((c) => c.type === tab);
+  const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
 
   return (
     <div>
@@ -88,7 +113,7 @@ export default function Categories() {
         {['expense', 'income'].map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => changeTab(t)}
             className={`-mb-px border-b-2 px-1 pb-2.5 text-sm font-medium capitalize transition-colors ${
               tab === t ? 'border-brand text-text-ink' : 'border-transparent text-text-muted hover:text-text-ink'
             }`}
@@ -102,43 +127,69 @@ export default function Categories() {
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : categories.length === 0 ? (
         <EmptyState
           title={`No ${tab} categories yet`}
           description="Create one to start tagging transactions."
           action={<Button onClick={openCreate}>New category</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c) => (
-            <Card key={c._id} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span
-                  className="flex h-9 w-9 items-center justify-center rounded-full"
-                  style={{ backgroundColor: `${c.color || '#1F5C52'}20`, color: c.color || '#1F5C52' }}
-                >
-                  <Tag size={16} />
-                </span>
-                <div>
-                  <p className="text-sm text-text-ink">{c.name}</p>
-                  {c.isDefault && (
-                    <Badge tone="neutral">Default</Badge>
-                  )}
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((c) => (
+              <Card key={c._id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full"
+                    style={{ backgroundColor: `${c.color || '#1F5C52'}20`, color: c.color || '#1F5C52' }}
+                  >
+                    <Tag size={16} />
+                  </span>
+                  <div>
+                    <p className="text-sm text-text-ink">{c.name}</p>
+                    {c.isDefault && <Badge tone="neutral">Default</Badge>}
+                  </div>
                 </div>
-              </div>
-              {!c.isDefault && (
-                <div className="flex gap-1">
-                  <button onClick={() => openEdit(c)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
-                    <Pencil size={15} />
-                  </button>
-                  <button onClick={() => handleDelete(c._id)} className="rounded-sm p-1.5 text-text-muted hover:bg-expense/10 hover:text-expense">
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              )}
-            </Card>
-          ))}
-        </div>
+                {!c.isDefault && (
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(c)} className="rounded-sm p-1.5 text-text-muted hover:bg-line/50 hover:text-text-ink">
+                      <Pencil size={15} />
+                    </button>
+                    <button onClick={() => handleDelete(c._id)} className="rounded-sm p-1.5 text-text-muted hover:bg-expense/10 hover:text-expense">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+            <p className="text-xs text-text-muted">
+              Showing <span className="figure">{categories.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}</span>–
+              <span className="figure">{Math.min(page * PAGE_SIZE, count)}</span> of <span className="figure">{count}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={!metadata?.previousPage}
+                className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+              >
+                <ChevronLeft size={14} /> Prev
+              </button>
+              <span className="figure text-xs text-text-muted">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={!metadata?.nextPage}
+                className="flex items-center gap-1 rounded-sm border border-line px-2.5 py-1.5 text-xs text-text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-line/40"
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit category' : 'New category'}>
