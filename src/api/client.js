@@ -40,8 +40,15 @@ async function request(path, { method = 'GET', body, params } = {}) {
   const payload = isJson ? await res.json() : null;
 
   if (!res.ok) {
-    const message = payload?.message || payload?.errorMessage || res.statusText || 'Request failed';
-
+    console.log("!res.ok)--->",payload)
+    
+    const message =
+            payload?.details?.[0]?.message ||
+            payload?.error?.message ||
+            payload?.message ||
+            payload?.errorMessage ||
+            res.statusText ||
+            "Request failed";
     // Token missing/expired/invalid: clear the bad session instead of retrying forever
     // with the same broken token on every subsequent request.
     const isAuthRoute = AUTH_PATHS.some((p) => path.startsWith(p));

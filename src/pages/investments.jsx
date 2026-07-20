@@ -53,7 +53,8 @@ function downloadCsv(rows, filename) {
 export default function Investments() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ query: '', type: '' });
+  const [filters, setFilters] = useState({ query: '', type: '' , startDate: '',
+    endDate: ''});
 
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(null);
@@ -76,6 +77,8 @@ export default function Investments() {
         order: 'desc',
         query: filters.query || undefined,
         type: filters.type || undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
       });
       setRows(res.data?.rows || []);
       setCount(res.data?.count || 0);
@@ -98,6 +101,14 @@ export default function Investments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, page]);
 
+    const clearFilters = () => {
+    setFilters({
+     query: '', 
+     type: '' , 
+     startDate: '',
+     endDate: ''
+    });
+  };
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
@@ -135,6 +146,7 @@ export default function Investments() {
       setModalOpen(false);
       loadInvestments();
     } catch (err) {
+      console.log("err-------->",err)
       setError(err.message || 'Unable to save investment.');
     } finally {
       setSaving(false);
@@ -162,7 +174,7 @@ export default function Investments() {
       if (allRows.length === 0) return;
       downloadCsv(allRows, `investments-${formatDateInput()}.csv`);
     } catch (err) {
-      console.error(err);
+     
       alert('Unable to export investments right now.');
     } finally {
       setExporting(false);
@@ -172,7 +184,7 @@ export default function Investments() {
   const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
   const rangeStart = count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, count);
-
+   const hasActiveFilters = Object.values(filters).some((v) => v && v !== '');
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -191,7 +203,7 @@ export default function Investments() {
       </div>
 
       <Card className="mb-6">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 mb-4">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
             <Input
@@ -201,14 +213,47 @@ export default function Investments() {
               onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             />
           </div>
-          <Select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
-            <option value="">All types</option>
-            <option value="share">Share</option>
-            <option value="mutualFunds">Mutual Funds</option>
-            <option value="sip">SIP</option>
-            <option value="realEState">Real Estate</option>
-            <option value="others">Others</option>
-          </Select>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <div className="flex flex-col">
+            <label className="mb-1 text-xs text-text-muted">From</label>
+            <Input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="mb-1 text-xs text-text-muted">To</label>
+            <Input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col">
+                  <label className="mb-1 text-xs text-text-muted">Type</label>
+                  <Select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+                    <option value="">All types</option>
+                    <option value="share">Share</option>
+                    <option value="mutualFunds">Mutual Funds</option>
+                    <option value="sip">SIP</option>
+                    <option value="realEState">Real Estate</option>
+                    <option value="others">Others</option>
+                  </Select>
+                  </div>
+           <div className="flex flex-col">
+              <label className="mb-1 text-xs text-text-muted">Reset</label>
+              <Button
+                variant="ghost"
+                className="border border-line px-3 text-md"
+                onClick={clearFilters}
+                disabled={!hasActiveFilters}
+              >
+                Clear filters
+              </Button>
+            </div>
         </div>
       </Card>
 
@@ -325,9 +370,10 @@ export default function Investments() {
             </Field>
           </div>
 
-          <Field label="Remarks (optional)">
+          <Field label="Remarks">
             <TextArea
               rows={2}
+              required
               value={form.remarks}
               onChange={(e) => setForm({ ...form, remarks: e.target.value })}
               placeholder="Optional note"
