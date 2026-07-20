@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, AlertTriangle, Eye, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search,Pencil, Trash2, AlertTriangle, Eye, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
 import { budgetsApi, categoriesApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput, titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, TextArea } from '../components/ui';
@@ -31,6 +31,10 @@ export default function Budgets() {
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(null);
   const [count, setCount] = useState(0);
+  const [rows, setRows] = useState([]);
+
+  const [filters, setFilters] = useState({ query: '', type: '', status: '' });
+
 
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsBudget, setDetailsBudget] = useState(null);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Pencil,Search, Trash2, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { categoriesApi } from '../api';
+import {  titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
 const PAGE_SIZE = 12;

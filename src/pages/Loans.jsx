@@ -6,12 +6,6 @@ import { Button, Card, Field, Input, Select, TextArea, Modal, Badge, Spinner, Em
 
 const PAGE_SIZE = 15;
 
-// NOTE: Badge in the Transactions page only uses tone="income" / tone="expense".
-// I'm reusing those two tones here rather than assuming new ones exist:
-//   - type   Lent -> "expense" tone (money leaving you), Borrowed -> "income" tone (money coming to you)
-//   - status Paid -> "income" tone (good), Unpaid -> "expense" tone (needs attention)
-// Swap these for dedicated tones (e.g. "warning", "neutral") if your Badge component supports them.
-
 const emptyForm = {
   personName: '',
   personContact: '',

@@ -176,7 +176,7 @@ export default function SavingsGoals() {
         </Button>
       </div>
       <Card className="mb-6">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
             <Input
@@ -186,7 +186,7 @@ export default function SavingsGoals() {
               onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             />
           </div>
-          
+        
           <Select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
             <option value="">All statuses</option>
             <option value="in_progress">In Progress</option>
