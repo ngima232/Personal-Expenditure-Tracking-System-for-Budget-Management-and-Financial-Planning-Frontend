@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2, Eye, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2, Eye, Search,Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { savingsGoalsApi } from '../api';
-import { formatCurrency, formatDate, formatDateInput } from '../utils/format';
-import { Button, Card, Field, Input, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
+import { formatCurrency, formatDate, formatDateInput,titleCase } from '../utils/format';
+import { Button, Card, Field, Input, Select,Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
 const PAGE_SIZE = 9;
 const emptyForm = { title: '', description: '', targetAmount: '', targetDate: '', icon: '' };
@@ -11,6 +11,8 @@ const emptyContribution = { amount: '', note: '' ,date:''};
 export default function SavingsGoals() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState([]);
+  const [filters, setFilters] = useState({ query: '',status: ''  });
 
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(null);
@@ -33,7 +35,13 @@ export default function SavingsGoals() {
   const loadGoals = async () => {
     setLoading(true);
     try {
-      const res = await savingsGoalsApi.list({ limit: PAGE_SIZE, page, sort: 'createdAt', order: 'desc' });
+      const res = await savingsGoalsApi.list({ 
+        limit: PAGE_SIZE,
+        page, 
+        sort: 'createdAt', 
+        order: 'desc',
+        query: filters.query || undefined,
+        status: filters.status || undefined, });
       setGoals(res.data?.rows || []);
       setCount(res.data?.count || 0);
       setMetadata(res.metadata || null);
@@ -43,6 +51,16 @@ export default function SavingsGoals() {
       setLoading(false);
     }
   };
+
+    useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
+    useEffect(() => {
+    const timeout = setTimeout(loadGoals, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, page]);
 
   useEffect(() => {
     loadGoals();
@@ -157,6 +175,26 @@ export default function SavingsGoals() {
           <Plus size={16} /> New goal
         </Button>
       </div>
+      <Card className="mb-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+            <Input
+              className="pl-9"
+              placeholder="Search Savings Goals"
+              value={filters.query}
+              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+            />
+          </div>
+          
+          <Select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+            <option value="">All statuses</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+             <option value="cancelled">Cancelled</option>
+          </Select>
+        </div>
+      </Card>
 
       {loading ? (
         <div className="flex justify-center py-16">
