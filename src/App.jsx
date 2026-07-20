@@ -8,7 +8,7 @@ import Budgets from './pages/Budgets';
 import SavingsGoals from './pages/SavingsGoals';
 import Categories from './pages/Categories';
 import NotFound from './pages/NotFound';
-
+import Loans from './pages/Loans';
 export default function App() {
   return (
     <Routes>
@@ -21,6 +21,7 @@ export default function App() {
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/savings-goals" element={<SavingsGoals />} />
         <Route path="/categories" element={<Categories />} />
+         <Route path="/loans" element={<Loans />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

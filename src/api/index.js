@@ -42,3 +42,13 @@ export const savingsGoalsApi = {
   remove: (id) => apiClient.delete(`/savings-goals/${id}`),
   contribute: (id, payload) => apiClient.post(`/savings-goals/${id}/contributions`, payload),
 };
+
+// loand
+export const loansApi = {
+  list: (params) => apiClient.get('/loans', params),
+  create: (payload) => apiClient.post('/loans', payload),
+  update: (id, payload) => apiClient.patch(`/loans/${id}`, payload),
+  remove: (id) => apiClient.delete(`/loans/${id}`),
+  updateStatus: (id, payload) => apiClient.patch(`/loans/${id}/status`,payload),
+  //  update: (id, payload) => apiClient.patch(`/savings-goals/${id}`, payload),
+};
