@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Plus, Pencil, Trash2, Search, Download, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { transactionsApi, categoriesApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput, titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, TextArea, Modal, Badge, Spinner, EmptyState, ErrorBanner } from '../components/ui';
@@ -15,7 +15,6 @@ const emptyForm = {
   paymentMethod: 'card',
   date: formatDateInput(),
 };
-
 
 function toCsvCell(value) {
   const str = String(value ?? '');
@@ -58,7 +57,20 @@ export default function Transactions() {
   const [rows, setRows] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ query: '', type: '', category: '' });
+  const [filters, setFilters] = useState({
+    query: '',
+    type: '',
+    category: '',
+    paymentMethod: '',
+    startDate: '',
+    endDate: '',
+    minAmount: '',
+    maxAmount: '',
+  });
+  // Category dropdown state
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const categoryDropdownRef = useRef(null);
 
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(null);
@@ -87,6 +99,11 @@ export default function Transactions() {
         query: filters.query || undefined,
         type: filters.type || undefined,
         category: filters.category || undefined,
+        paymentMethod: filters.paymentMethod || undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
+        minAmount: filters.minAmount ? parseFloat(filters.minAmount) : undefined,
+        maxAmount: filters.maxAmount ? parseFloat(filters.maxAmount) : undefined,
       });
       setRows(res.data?.rows || []);
       setCount(res.data?.count || 0);
@@ -102,7 +119,7 @@ export default function Transactions() {
     loadCategories();
   }, []);
 
-  // Any filter change should reset back to page 1, not stay on a page that may no longer exist.
+  // Reset to page 1 when any filter changes
   useEffect(() => {
     setPage(1);
   }, [filters]);
@@ -112,6 +129,31 @@ export default function Transactions() {
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, page]);
+
+  const clearFilters = () => {
+    setFilters({
+      query: '',
+      type: '',
+      category: '',
+      paymentMethod: '',
+      startDate: '',
+      endDate: '',
+      minAmount: '',
+      maxAmount: '',
+    });
+    setCategorySearch('');
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setIsCategoryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -160,7 +202,6 @@ export default function Transactions() {
     loadTransactions();
   };
 
-  
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -172,6 +213,11 @@ export default function Transactions() {
         query: filters.query || undefined,
         type: filters.type || undefined,
         category: filters.category || undefined,
+        paymentMethod: filters.paymentMethod || undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
+        minAmount: filters.minAmount ? parseFloat(filters.minAmount) : undefined,
+        maxAmount: filters.maxAmount ? parseFloat(filters.maxAmount) : undefined,
       });
       const allRows = res.data?.rows || [];
       if (allRows.length === 0) return;
@@ -184,10 +230,17 @@ export default function Transactions() {
     }
   };
 
-  const filteredCategories = categories.filter((c) => !form.type || c.type === form.type);
+  // Filter categories by type and search term
+  const filteredCategories = categories
+    .filter((c) => !filters.type || c.type === filters.type)
+    .filter((c) => c.name.toLowerCase().includes(categorySearch.toLowerCase()));
+
+  const selectedCategory = categories.find((c) => c._id === filters.category);
   const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
   const rangeStart = count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, count);
+
+  const hasActiveFilters = Object.values(filters).some((v) => v && v !== '');
 
   return (
     <div>
@@ -206,33 +259,159 @@ export default function Transactions() {
         </div>
       </div>
 
+      {/* Filters Card – redesigned with custom category dropdown */}
       <Card className="mb-6">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
-            <Input
-              className="pl-9"
-              placeholder="Search description…"
-              value={filters.query}
-              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-            />
+        <div className="space-y-4">
+          {/* Row 1: Search + Type + Category (custom dropdown) */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+              <Input
+                className="pl-9"
+                placeholder="Search description…"
+                value={filters.query}
+                onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+              />
+            </div>
+            <Select
+              value={filters.type}
+              onChange={(e) => {
+                setFilters({ ...filters, type: e.target.value, category: '' });
+                setCategorySearch('');
+              }}
+            >
+              <option value="">All types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </Select>
+
+            {/* Custom category dropdown with search inside */}
+            <div className="relative" ref={categoryDropdownRef}>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded border border-line bg-white px-3 py-2 text-sm text-text-ink hover:border-primary focus:border-primary focus:outline-none"
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+              >
+                <span>{selectedCategory?.name || 'All categories'}</span>
+                <ChevronDown size={16} className={`transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isCategoryOpen && (
+                <div className="absolute left-0 right-0 z-10 mt-1 rounded border border-line bg-white shadow-lg">
+                  <div className="p-2">
+                    <div className="relative">
+                      <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted" />
+                      <Input
+                        className="pl-7"
+                        placeholder="Search categories…"
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredCategories.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-text-muted">No categories found</div>
+                    ) : (
+                      <>
+                        <button
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-line/50"
+                          onClick={() => {
+                            setFilters({ ...filters, category: '' });
+                            setCategorySearch('');
+                            setIsCategoryOpen(false);
+                          }}
+                        >
+                          All categories
+                        </button>
+                        {filteredCategories.map((c) => (
+                          <button
+                            key={c._id}
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-line/50"
+                            onClick={() => {
+                              setFilters({ ...filters, category: c._id });
+                              setCategorySearch('');
+                              setIsCategoryOpen(false);
+                            }}
+                          >
+                            {c.name}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Select
+              value={filters.paymentMethod}
+              onChange={(e) => setFilters({ ...filters, paymentMethod: e.target.value })}
+            >
+              <option value="">All payment methods</option>
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {titleCase(m)}
+                </option>
+              ))}
+            </Select>
           </div>
-          <Select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
-            <option value="">All types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </Select>
-          <Select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}>
-            <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+
+<div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+  <div className="flex flex-col">
+    <label className="mb-1 text-xs text-text-muted">From</label>
+    <Input
+      type="date"
+      value={filters.startDate}
+      onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-xs text-text-muted">To</label>
+    <Input
+      type="date"
+      value={filters.endDate}
+      onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-xs text-text-muted">Min</label>
+    <Input
+      type="number"
+      step="0.01"
+      min="0"
+      value={filters.minAmount}
+      onChange={(e) => setFilters({ ...filters, minAmount: e.target.value })}
+      placeholder="0.00"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-xs text-text-muted">Max</label>
+    <Input
+      type="number"
+      step="0.01"
+      min="0"
+      value={filters.maxAmount}
+      onChange={(e) => setFilters({ ...filters, maxAmount: e.target.value })}
+      placeholder="0.00"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-xs text-text-muted">Reset</label>
+    <Button
+      variant="ghost"
+      className="border border-line px-3 text-md"
+      onClick={clearFilters}
+      disabled={!hasActiveFilters}
+    >
+      Clear filters
+    </Button>
+  </div>
+</div>
         </div>
       </Card>
 
+      {/* Transactions List – unchanged */}
       <Card>
         {loading ? (
           <div className="flex justify-center py-16">
@@ -328,11 +507,13 @@ export default function Transactions() {
           <Field label="Category">
             <Select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
               <option value="">Select a category</option>
-              {filteredCategories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories
+                .filter((c) => c.type === form.type)
+                .map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
             </Select>
           </Field>
 
