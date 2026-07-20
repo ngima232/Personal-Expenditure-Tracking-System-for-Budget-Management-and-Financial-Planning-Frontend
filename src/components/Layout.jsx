@@ -17,6 +17,8 @@ const NAV_ITEMS = [
   { to: '/savings-goals', label: 'Savings Goals', icon: PiggyBank },
   { to: '/categories', label: 'Categories', icon: Tags },
   { to: '/loans', label: 'Loans', icon: Wallet },
+  { to: '/investments', label: 'investments', icon: Wallet },
+  
 ];
 
 export function ProtectedRoute() {

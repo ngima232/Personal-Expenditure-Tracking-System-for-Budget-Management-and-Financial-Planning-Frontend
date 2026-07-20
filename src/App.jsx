@@ -7,8 +7,10 @@ import Transactions from './pages/Transactions';
 import Budgets from './pages/Budgets';
 import SavingsGoals from './pages/SavingsGoals';
 import Categories from './pages/Categories';
-import NotFound from './pages/NotFound';
 import Loans from './pages/Loans';
+import Investments from './pages/investments';
+import NotFound from './pages/NotFound';
+
 export default function App() {
   return (
     <Routes>
@@ -21,7 +23,9 @@ export default function App() {
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/savings-goals" element={<SavingsGoals />} />
         <Route path="/categories" element={<Categories />} />
-         <Route path="/loans" element={<Loans />} />
+        <Route path="/loans" element={<Loans />} />
+        <Route path="/investments" element={<Investments />} />
+         
       </Route>
 
       <Route path="*" element={<NotFound />} />
