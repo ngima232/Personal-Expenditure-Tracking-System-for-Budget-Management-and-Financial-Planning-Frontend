@@ -353,7 +353,7 @@ export default function Loans() {
                 onChange={(e) => setForm({ ...form, personName: e.target.value })}
               />
             </Field>
-            <Field label="Contact (optional)">
+            <Field label="Contact Number">
               <Input
                 value={form.personContact}
                 onChange={(e) => setForm({ ...form, personContact: e.target.value })}
@@ -374,10 +374,10 @@ export default function Loans() {
             <Field label="Date">
               <Input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
             </Field>
-            <Field label="Return date (optional)">
+            <Field label="Return date ">
               <Input type="date" value={form.returnDate} onChange={(e) => setForm({ ...form, returnDate: e.target.value })} />
             </Field>
-            <Field label="Interest % (optional)">
+            <Field label="Interest %">
               <Input
                 type="number"
                 step="0.01"

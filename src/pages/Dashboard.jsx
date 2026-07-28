@@ -1,6 +1,23 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import { transactionsApi, budgetsApi } from '../api';
 import { formatCurrency, formatDate, titleCase } from '../utils/format';
 import { Card, Spinner, EmptyState, Badge } from '../components/ui';
@@ -14,6 +31,7 @@ export default function Dashboard() {
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
   const [budgets, setBudgets] = useState([]);
+  const [categorySpending, setCategorySpending] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,15 +39,17 @@ export default function Dashboard() {
     async function load() {
       setLoading(true);
       try {
-        const [summaryRes, txRes, budgetRes] = await Promise.all([
+        const [summaryRes, txRes, budgetRes, spendingRes] = await Promise.all([
           transactionsApi.summary({ startDate: startOfMonth() }),
           transactionsApi.list({ limit: 6, sort: 'date', order: 'desc', page: 1 }),
           budgetsApi.list({ limit: 4, isActive: true, page: 1 }),
+          transactionsApi.getCategorySpending({ startDate: startOfMonth() }),
         ]);
         if (!mounted) return;
         setSummary(summaryRes.data);
         setRecent(txRes.data?.rows || []);
         setBudgets(budgetRes.data?.rows || []);
+        setCategorySpending(spendingRes.data || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -54,6 +74,7 @@ export default function Dashboard() {
   const income = summary?.totalIncome ?? 0;
   const expense = summary?.totalExpense ?? 0;
 
+  // Prepare data for the area chart (recent activity)
   const chartData = recent
     .slice()
     .reverse()
@@ -62,15 +83,33 @@ export default function Dashboard() {
       amount: t.type === 'expense' ? -t.amount : t.amount,
     }));
 
+  // Prepare data for the pie chart (category spending)
+  const pieData = [...categorySpending]
+    .sort((a, b) => b.total - a.total)
+    .map((item) => ({
+      name: item.category.name,
+      value: item.total,
+      color: item.category.color || '#1F5C52', // fallback colour
+    }));
+
+  const totalSpending = pieData.reduce((sum, item) => sum + item.value, 0);
+
   return (
     <div>
+      {/* Header */}
       <header className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-wide text-text-muted">This month</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+          This month
+        </p>
         <div className="mt-2 flex items-baseline gap-3">
           <h1 className="figure font-display text-5xl font-medium text-text-ink">
             {formatCurrency(net)}
           </h1>
-          <span className={`flex items-center text-sm font-medium ${net >= 0 ? 'text-income' : 'text-expense'}`}>
+          <span
+            className={`flex items-center text-sm font-medium ${
+              net >= 0 ? 'text-income' : 'text-expense'
+            }`}
+          >
             {net >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
             Net balance
           </span>
@@ -78,28 +117,43 @@ export default function Dashboard() {
         <div className="ledger-rule mt-6" />
       </header>
 
+      {/* Income / Expense summary cards */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Income</p>
-            <p className="figure mt-1 text-2xl text-income">{formatCurrency(income)}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+              Income
+            </p>
+            <p className="figure mt-1 text-2xl text-income">
+              {formatCurrency(income)}
+            </p>
           </div>
           <TrendingUp className="text-income" size={28} strokeWidth={1.5} />
         </Card>
         <Card className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Expenses</p>
-            <p className="figure mt-1 text-2xl text-expense">{formatCurrency(expense)}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+              Expenses
+            </p>
+            <p className="figure mt-1 text-2xl text-expense">
+              {formatCurrency(expense)}
+            </p>
           </div>
           <TrendingDown className="text-expense" size={28} strokeWidth={1.5} />
         </Card>
       </div>
 
+      {/* Recent activity + Active budgets row */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <p className="mb-4 font-display text-base text-text-ink">Recent activity</p>
+          <p className="mb-4 font-display text-base text-text-ink">
+            Recent activity
+          </p>
           {chartData.length === 0 ? (
-            <EmptyState title="No transactions yet" description="Add your first income or expense to see trends here." />
+            <EmptyState
+              title="No transactions yet"
+              description="Add your first income or expense to see trends here."
+            />
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={chartData}>
@@ -110,21 +164,43 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="#D8DBD3" strokeDasharray="4 4" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#5B685F' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#5B685F' }} axisLine={false} tickLine={false} width={70}
-                  tickFormatter={(v) => formatCurrency(v)} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: '#5B685F' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#5B685F' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={70}
+                  tickFormatter={(v) => formatCurrency(v)}
+                />
                 <Tooltip
                   formatter={(v) => formatCurrency(v)}
-                  contentStyle={{ borderColor: '#D8DBD3', fontSize: 12, fontFamily: 'Inter' }}
+                  contentStyle={{
+                    borderColor: '#D8DBD3',
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                  }}
                 />
-                <Area type="monotone" dataKey="amount" stroke="#1F5C52" strokeWidth={2} fill="url(#netGradient)" />
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="#1F5C52"
+                  strokeWidth={2}
+                  fill="url(#netGradient)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           )}
         </Card>
 
         <Card>
-          <p className="mb-4 font-display text-base text-text-ink">Active budgets</p>
+          <p className="mb-4 font-display text-base text-text-ink">
+            Active budgets
+          </p>
           {budgets.length === 0 ? (
             <p className="text-sm text-text-muted">No active budgets set.</p>
           ) : (
@@ -132,11 +208,18 @@ export default function Dashboard() {
               {budgets.map((b) => (
                 <li key={b._id}>
                   <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="text-text-ink">{b.category?.name || 'Category'}</span>
-                    <span className="figure text-text-muted">{formatCurrency(b.limitAmount)}</span>
+                    <span className="text-text-ink">
+                      {b.category?.name || 'Category'}
+                    </span>
+                    <span className="figure text-text-muted">
+                      {formatCurrency(b.limitAmount)}
+                    </span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-line/60">
-                    <div className="h-full rounded-full bg-gold" style={{ width: '45%' }} />
+                    <div
+                      className="h-full rounded-full bg-gold"
+                      style={{ width: '45%' }}
+                    />
                   </div>
                 </li>
               ))}
@@ -145,32 +228,111 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card>
-        <p className="mb-4 font-display text-base text-text-ink">Latest transactions</p>
-        {recent.length === 0 ? (
-          <EmptyState title="Nothing logged yet" description="Transactions you add will show up here." />
-        ) : (
-          <div className="divide-y divide-line">
-            {recent.map((t) => (
-              <div key={t._id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm text-text-ink">{t.description || t.category?.name || 'Transaction'}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
-                    {formatDate(t.date)} · {t.category?.name}
-                  </p>
+      {/* Latest transactions + Spending by category row */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <p className="mb-4 font-display text-base text-text-ink">
+            Latest transactions
+          </p>
+          {recent.length === 0 ? (
+            <EmptyState
+              title="Nothing logged yet"
+              description="Transactions you add will show up here."
+            />
+          ) : (
+            <div className="divide-y divide-line">
+              {recent.map((t) => (
+                <div key={t._id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm text-text-ink">
+                      {t.description || t.category?.name || 'Transaction'}
+                    </p>
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      {formatDate(t.date)} · {t.category?.name}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge tone={t.type === 'income' ? 'income' : 'expense'}>
+                      {titleCase(t.type)}
+                    </Badge>
+                    <span
+                      className={`figure text-sm ${
+                        t.type === 'income' ? 'text-income' : 'text-expense'
+                      }`}
+                    >
+                      {t.type === 'income' ? '+' : '−'}
+                      {formatCurrency(t.amount)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge tone={t.type === 'income' ? 'income' : 'expense'}>{titleCase(t.type)}</Badge>
-                  <span className={`figure text-sm ${t.type === 'income' ? 'text-income' : 'text-expense'}`}>
-                    {t.type === 'income' ? '+' : '−'}
-                    {formatCurrency(t.amount)}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-display text-base text-text-ink">
+              Spending by category
+            </p>
+            {pieData.length > 0 && (
+              <span className="text-sm text-text-muted">
+                Total: {formatCurrency(totalSpending)}
+              </span>
+            )}
           </div>
-        )}
-      </Card>
+          {pieData.length === 0 ? (
+            <p className="text-sm text-text-muted">
+              No expense transactions this month.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  innerRadius={50}
+                  paddingAngle={2}
+                  label={({ name, percent }) =>
+                    `${(percent * 100).toFixed(0)}%`
+                  }
+                  labelLine={{ stroke: '#D8DBD3', strokeWidth: 1 }}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{
+                    borderColor: '#D8DBD3',
+                    fontSize: 12,
+                  }}
+                />
+                <Legend
+                  layout="vertical"
+                  verticalAlign="middle"
+                  align="right"
+                  iconType="circle"
+                  iconSize={10}
+                  formatter={(value) => (
+                    <span className="text-sm text-text-ink">{value}</span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

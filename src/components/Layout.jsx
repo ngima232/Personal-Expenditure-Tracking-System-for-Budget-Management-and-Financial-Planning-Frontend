@@ -18,6 +18,8 @@ const NAV_ITEMS = [
   { to: '/categories', label: 'Categories', icon: Tags },
   { to: '/loans', label: 'Loans', icon: Wallet },
   { to: '/investments', label: 'investments', icon: Wallet },
+    { to: '/expense-forecast', label: 'expense-forecast', icon: Wallet },
+  //expense-forecast
   
 ];
 

@@ -23,6 +23,9 @@ export const transactionsApi = {
   create: (payload) => apiClient.post('/income-expense', payload),
   update: (id, payload) => apiClient.patch(`/income-expense/${id}`, payload),
   remove: (id) => apiClient.delete(`/income-expense/${id}`),
+  getForecast: (params) => apiClient.get('/income-expense/forecast', { params }),
+  // api/transactions.js
+getCategorySpending: (params) => apiClient.get('/income-expense/category-spending', { params }),
 };
 
 // --- Budgets ---

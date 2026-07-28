@@ -9,6 +9,7 @@ import SavingsGoals from './pages/SavingsGoals';
 import Categories from './pages/Categories';
 import Loans from './pages/Loans';
 import Investments from './pages/investments';
+import ExpenseForecast from './pages/ExpenseForecast'
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/categories" element={<Categories />} />
         <Route path="/loans" element={<Loans />} />
         <Route path="/investments" element={<Investments />} />
+        <Route path="/expense-forecast" element={<ExpenseForecast />} />
          
       </Route>
 
