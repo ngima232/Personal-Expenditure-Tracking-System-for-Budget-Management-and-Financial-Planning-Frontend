@@ -11,6 +11,7 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('expense');
+  const [filters, setFilters] = useState({ query: '' });
 
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(null);
@@ -25,7 +26,7 @@ export default function Categories() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await categoriesApi.list({ limit: PAGE_SIZE, page, type: tab });
+      const res = await categoriesApi.list({ limit: PAGE_SIZE, page, type: tab , query: filters.query || undefined});
       setCategories(res.data?.rows || []);
       setCount(res.data?.count || 0);
       setMetadata(res.metadata || null);
@@ -36,10 +37,14 @@ export default function Categories() {
     }
   };
 
+    useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, page]);
+  }, [tab, page,filters]);
 
   // Switching tabs should always land back on page 1, since the previous
   // page number likely doesn't exist for the other type's result set.
@@ -109,7 +114,20 @@ export default function Categories() {
           <Plus size={16} /> New category
         </Button>
       </div>
-
+     <Card className="mb-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+            <Input
+              className="pl-9"
+              placeholder="Search Name"
+              value={filters.query}
+              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+            />
+          </div>
+           </div>
+            </Card>
+          
       <div className="mb-5 flex gap-2 border-b border-line">
         {['expense', 'income'].map((t) => (
           <button
@@ -123,7 +141,7 @@ export default function Categories() {
           </button>
         ))}
       </div>
-
+      
       {loading ? (
         <div className="flex justify-center py-16">
           <Spinner />
@@ -205,6 +223,7 @@ export default function Categories() {
               <option value="income">Income</option>
             </Select>
           </Field>
+          
           <Field label="Color">
             <input
               type="color"
