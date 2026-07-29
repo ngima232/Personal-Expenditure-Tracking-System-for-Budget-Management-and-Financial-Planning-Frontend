@@ -6,6 +6,9 @@ import {
   PiggyBank,
   Tags,
   LogOut,
+  HandCoins,
+  Banknote,
+  
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from './ui';
@@ -16,11 +19,9 @@ const NAV_ITEMS = [
   { to: '/budgets', label: 'Budgets', icon: Wallet },
   { to: '/savings-goals', label: 'Savings Goals', icon: PiggyBank },
   { to: '/categories', label: 'Categories', icon: Tags },
-  { to: '/loans', label: 'Loans', icon: Wallet },
-  { to: '/investments', label: 'investments', icon: Wallet },
-    { to: '/expense-forecast', label: 'expense-forecast', icon: Wallet },
-  //expense-forecast
-  
+  { to: '/loans', label: 'Loans', icon: HandCoins },
+  { to: '/investments', label: 'investments', icon: Banknote },
+  { to: '/expense-forecast', label: 'expense-forecast', icon: Wallet },  
 ];
 
 export function ProtectedRoute() {

@@ -1,4 +1,4 @@
-export function formatCurrency(amount, currency = 'USD') {
+export function formatCurrency(amount, currency = 'gbp') {
   const value = Number(amount) || 0;
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

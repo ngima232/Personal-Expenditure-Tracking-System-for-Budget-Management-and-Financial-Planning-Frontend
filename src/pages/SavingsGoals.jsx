@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, PiggyBank, CheckCircle2, Eye, Search,Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { savingsGoalsApi } from '../api';
 import { formatCurrency, formatDate, formatDateInput,titleCase } from '../utils/format';
-import { Button, Card, Field, Input, Select,Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
+import { Button, Card, TextArea,Field, Input, Select,Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
 const PAGE_SIZE = 9;
 const emptyForm = { title: '', description: '', targetAmount: '', targetDate: '', icon: '' };
@@ -317,13 +317,21 @@ export default function SavingsGoals() {
             </Field>
           </div>
 
-          <Field label="Description">
+          {/* <Field label="Description">
             <Input
               placeholder="What is this goal for?"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
-          </Field>
+          </Field> */}
+         <Field label="Description">
+                     <TextArea
+                       rows={2}
+                       value={form.description}
+                       onChange={(e) => setForm({ ...form, description: e.target.value })}
+                        placeholder="What is this goal for?"
+                     />
+                   </Field>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
