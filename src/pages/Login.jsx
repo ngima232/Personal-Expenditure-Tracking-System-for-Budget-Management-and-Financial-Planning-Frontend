@@ -28,7 +28,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-ink px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="font-display text-3xl font-medium text-paper-card">Ledger</p>
+          <p className="font-display text-3xl font-medium text-paper-card"> Personal Expenditure Tracking system</p>
           <p className="mt-1 text-sm text-paper-card/50">Sign in to manage your finances</p>
         </div>
 
