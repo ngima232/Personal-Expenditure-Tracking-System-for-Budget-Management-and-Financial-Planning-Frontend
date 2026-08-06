@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import currencies from "../utils/currencies";
+import Select from "react-select";
 import {
   ArrowUpRight,
   Wallet,
   PiggyBank,
   HandCoins,
   TrendingUp,
+  Banknote,
   X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -50,13 +53,14 @@ const FEATURES = [
   { icon: Wallet, name: 'Budgets' },
   { icon: PiggyBank, name: 'Savings goals' },
   { icon: HandCoins, name: 'Loans' },
+    { icon: Banknote, name: 'Investments' },
   { icon: TrendingUp, name: 'Forecasting' },
 ];
 
 function AuthModal({ mode, onClose, onSwitchMode }) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '',currency: "GBP", });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const isSignUp = mode === 'signup';
@@ -143,7 +147,61 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
               className="w-full rounded-sm border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#C9A24B] focus:outline-none"
             />
           </div>
-
+           {isSignUp && (
+          <div>
+             {/* <Field label="Currency"> */}
+             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Currency</label>
+                          <Select
+                            options={currencies}
+                            isSearchable
+                            placeholder="Select your currency"
+                            value={currencies.find(
+                              (currency) => currency.value === form.currency
+                            )}
+                            onChange={(selected) =>
+                              setForm({
+                                ...form,
+                                currency: selected.value,
+                              })
+                            }
+                            styles={{
+                              control: (base) => ({
+                                ...base,
+                                backgroundColor: "#1F2937",
+                                borderColor: "#374151",
+                                color: "#fff",
+                                minHeight: "42px",
+                              }),
+                              menu: (base) => ({
+                                ...base,
+                                backgroundColor: "#1F2937",
+                                color: "#fff",
+                              }),
+                              option: (base, state) => ({
+                                ...base,
+                                backgroundColor: state.isFocused
+                                  ? "#374151"
+                                  : "#1F2937",
+                                color: "#fff",
+                                cursor: "pointer",
+                              }),
+                              singleValue: (base) => ({
+                                ...base,
+                                color: "#fff",
+                              }),
+                              input: (base) => ({
+                                ...base,
+                                color: "#fff",
+                              }),
+                              placeholder: (base) => ({
+                                ...base,
+                                color: "#9CA3AF",
+                              }),
+                            }}
+                          />
+                  
+          </div>
+           )}
           <button
             type="submit"
             disabled={loading}
@@ -194,8 +252,8 @@ export default function LandingPage() {
         {/* Nav */}
         <header className="flex shrink-0 items-center justify-between px-6 py-5 sm:px-10">
           <div className="flex items-baseline gap-2">
-            <span className="font-serif text-xl font-medium tracking-tight text-[#F8F9F5]">Ledger</span>
-            <span className="hidden text-xs text-white/40 sm:inline">personal expenditure</span>
+            <span className="font-serif text-xl font-medium tracking-tight text-[#F8F9F5]">PETS</span>
+            <span className="hidden text-xs text-white/40 sm:inline">Personal Expenditure Tracking System</span>
           </div>
           <nav className="flex items-center gap-2">
             <button
