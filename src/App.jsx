@@ -10,16 +10,18 @@ import Categories from './pages/Categories';
 import Loans from './pages/Loans';
 import Investments from './pages/investments';
 import ExpenseForecast from './pages/ExpenseForecast'
+import LandingPage from './pages/LandingPage';
 import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
     <Routes>
+       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/savings-goals" element={<SavingsGoals />} />

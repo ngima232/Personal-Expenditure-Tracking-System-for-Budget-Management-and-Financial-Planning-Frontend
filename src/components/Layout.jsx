@@ -5,16 +5,15 @@ import {
   Wallet,
   PiggyBank,
   Tags,
-  LogOut,
-  HandCoins,
   Banknote,
-  
+  HandCoins,
+  LogOut,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from './ui';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
   { to: '/budgets', label: 'Budgets', icon: Wallet },
   { to: '/savings-goals', label: 'Savings Goals', icon: PiggyBank },
@@ -44,11 +43,13 @@ function AppLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-paper">
-      <aside className="flex w-60 shrink-0 flex-col bg-ink text-paper-card">
+
+   
+    <div className="flex h-screen overflow-hidden bg-paper">
+      <aside className="flex h-screen w-60 shrink-0 flex-col overflow-y-auto bg-ink text-paper-card">
         <div className="px-6 py-6">
-          <p className="font-display text-xl font-medium tracking-tight text-paper-card">PETS</p>
-          <p className="mt-0.5 text-xs text-paper-card/50">Personal Expenditure Tracking System</p>
+          <p className="font-display text-xl font-medium tracking-tight text-paper-card">Ledger</p>
+          <p className="mt-0.5 text-xs text-paper-card/50">Personal Expenditure Tracker</p>
         </div>
 
         <nav className="mt-2 flex-1 px-3">
@@ -71,7 +72,8 @@ function AppLayout() {
           ))}
         </nav>
 
-        <div className="border-t border-paper-card/10 px-4 py-4">
+
+        <div className="shrink-0 border-t border-paper-card/10 px-4 py-4">
           <p className="truncate px-2 text-sm text-paper-card/80">{user?.name}</p>
           <p className="truncate px-2 text-xs text-paper-card/40">{user?.email}</p>
           <button
@@ -84,7 +86,9 @@ function AppLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
+      {/* This is now the ONLY element that scrolls when page content is taller than the
+          viewport — the sidebar next to it stays fixed at exactly h-screen regardless. */}
+      <main className="h-screen flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-8 py-8">
           <Outlet />
         </div>
