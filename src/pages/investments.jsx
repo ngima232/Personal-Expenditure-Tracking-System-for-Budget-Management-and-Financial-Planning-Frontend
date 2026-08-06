@@ -232,7 +232,7 @@ export default function Investments() {
               onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
             />
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
                   <label className="mb-1 text-xs text-text-muted">Type</label>
                   <Select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
                     <option value="">All types</option>
@@ -242,7 +242,35 @@ export default function Investments() {
                     <option value="realEState">Real Estate</option>
                     <option value="others">Others</option>
                   </Select>
-                  </div>
+                  </div> */}
+                  <div className="flex flex-col">
+  <label className="mb-1 text-xs text-text-muted">Type</label>
+
+  <Select
+    value={filters.type}
+    onChange={(e) =>
+      setFilters({ ...filters, type: e.target.value })
+    }
+  >
+    <option value="">All types</option>
+    <option value="STOCK">Stock</option>
+    <option value="ETF">ETF</option>
+    <option value="MUTUAL_FUND">Mutual Fund</option>
+    <option value="BOND">Bond</option>
+    <option value="FIXED_DEPOSIT">Fixed Deposit</option>
+    <option value="GOLD">Gold</option>
+    <option value="SILVER">Silver</option>
+    <option value="REAL_ESTATE">Real Estate</option>
+    <option value="CRYPTO">Cryptocurrency</option>
+    <option value="PENSION">Pension</option>
+    <option value="PROVIDENT_FUND">Provident Fund</option>
+    <option value="BUSINESS">Business</option>
+    <option value="STARTUP">Startup</option>
+    <option value="COMMODITY">Commodity</option>
+    <option value="OTHER">Other</option>
+  </Select>
+</div>
+                  
            <div className="flex flex-col">
               <label className="mb-1 text-xs text-text-muted">Reset</label>
               <Button
@@ -340,11 +368,22 @@ export default function Investments() {
             </Field>
             <Field label="Type">
               <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                <option value="share">Share</option>
-                <option value="mutualFunds">Mutual Funds</option>
-                <option value="sip">SIP</option>
-                <option value="realEState">Real Estate</option>
-                <option value="others">Others</option>
+              
+                <option value="STOCK">Stock</option>
+                <option value="ETF">ETF</option>
+                <option value="MUTUAL_FUND">Mutual Fund</option>
+                <option value="BOND">Bond</option>
+                <option value="FIXED_DEPOSIT">Fixed Deposit</option>
+                <option value="GOLD">Gold</option>
+                <option value="SILVER">Silver</option>
+                <option value="REAL_ESTATE">Real Estate</option>
+                <option value="CRYPTO">Cryptocurrency</option>
+                <option value="PENSION">Pension</option>
+                <option value="PROVIDENT_FUND">Provident Fund</option>
+                <option value="BUSINESS">Business</option>
+                <option value="STARTUP">Startup</option>
+                <option value="COMMODITY">Commodity</option>
+                <option value="OTHER">Other</option>
               </Select>
             </Field>
           </div>
