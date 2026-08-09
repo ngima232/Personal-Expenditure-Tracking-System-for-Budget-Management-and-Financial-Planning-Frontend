@@ -89,7 +89,7 @@ export default function Dashboard() {
     .map((item) => ({
       name: item.category.name,
       value: item.total,
-      color: item.category.color || '#1F5C52', // fallback colour
+      color: item.category.color || '#4F46E5', // fallback colour
     }));
 
   const totalSpending = pieData.reduce((sum, item) => sum + item.value, 0);
@@ -159,19 +159,19 @@ export default function Dashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#1F5C52" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#1F5C52" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#4F46E5" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#D8DBD3" strokeDasharray="4 4" vertical={false} />
+                <CartesianGrid stroke="#E2E8F0" strokeDasharray="4 4" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: '#5B685F' }}
+                  tick={{ fontSize: 11, fill: '#64748B' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#5B685F' }}
+                  tick={{ fontSize: 11, fill: '#64748B' }}
                   axisLine={false}
                   tickLine={false}
                   width={70}
@@ -180,7 +180,7 @@ export default function Dashboard() {
                 <Tooltip
                   formatter={(v) => formatCurrency(v)}
                   contentStyle={{
-                    borderColor: '#D8DBD3',
+                    borderColor: '#E2E8F0',
                     fontSize: 12,
                     fontFamily: 'Inter',
                   }}
@@ -188,7 +188,7 @@ export default function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="amount"
-                  stroke="#1F5C52"
+                  stroke="#4F46E5"
                   strokeWidth={2}
                   fill="url(#netGradient)"
                 />
@@ -300,13 +300,13 @@ export default function Dashboard() {
                   label={({ name, percent }) =>
                     `${(percent * 100).toFixed(0)}%`
                   }
-                  labelLine={{ stroke: '#D8DBD3', strokeWidth: 1 }}
+                  labelLine={{ stroke: '#E2E8F0', strokeWidth: 1 }}
                 >
                   {pieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.color}
-                      stroke="#fff"
+                      stroke="#FFFFFF"
                       strokeWidth={2}
                     />
                   ))}
@@ -314,7 +314,7 @@ export default function Dashboard() {
                 <Tooltip
                   formatter={(value) => formatCurrency(value)}
                   contentStyle={{
-                    borderColor: '#D8DBD3',
+                    borderColor: '#E2E8F0',
                     fontSize: 12,
                   }}
                 />

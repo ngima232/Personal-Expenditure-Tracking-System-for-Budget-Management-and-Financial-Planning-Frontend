@@ -5,7 +5,7 @@ import {  titleCase } from '../utils/format';
 import { Button, Card, Field, Input, Select, Modal, Spinner, EmptyState, ErrorBanner, Badge } from '../components/ui';
 
 const PAGE_SIZE = 12;
-const emptyForm = { name: '', type: 'expense', icon: '', color: '#1F5C52' };
+const emptyForm = { name: '', type: 'expense', icon: '', color: '#4F46E5' };
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -62,7 +62,7 @@ export default function Categories() {
 
   const openEdit = (c) => {
     setEditing(c);
-    setForm({ name: c.name, type: c.type, icon: c.icon || '', color: c.color || '#1F5C52' });
+    setForm({ name: c.name, type: c.type, icon: c.icon || '', color: c.color || '#4F46E5' });
     setError('');
     setModalOpen(true);
   };
@@ -160,7 +160,7 @@ export default function Categories() {
                 <div className="flex items-center gap-3">
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-full"
-                    style={{ backgroundColor: `${c.color || '#1F5C52'}20`, color: c.color || '#1F5C52' }}
+                    style={{ backgroundColor: `${c.color || '#4F46E5'}20`, color: c.color || '#4F46E5' }}
                   >
                     <Tag size={16} />
                   </span>

@@ -29,12 +29,12 @@ function formatAmount(n) {
 function LedgerTape() {
   const entries = [...TAPE_ENTRIES, ...TAPE_ENTRIES];
   return (
-    <div className="relative overflow-hidden border-y border-white/10 bg-black/20">
+    <div className="relative overflow-hidden border-y border-white/10 bg-white/5">
       <div className="tape-track flex w-max gap-8 px-5 py-2.5">
         {entries.map((e, i) => (
           <div key={i} className="flex items-center gap-2 whitespace-nowrap font-mono text-xs">
             <span className="text-white/40">{e.label}</span>
-            <span className={e.type === 'income' ? 'text-[#5FAE86]' : 'text-[#D98C82]'}>
+            <span className={e.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}>
               {formatAmount(e.amount)}
             </span>
           </div>
@@ -53,14 +53,14 @@ const FEATURES = [
   { icon: Wallet, name: 'Budgets' },
   { icon: PiggyBank, name: 'Savings goals' },
   { icon: HandCoins, name: 'Loans' },
-    { icon: Banknote, name: 'Investments' },
+  { icon: Banknote, name: 'Investments' },
   { icon: TrendingUp, name: 'Forecasting' },
 ];
 
 function AuthModal({ mode, onClose, onSwitchMode }) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '',currency: "GBP", });
+  const [form, setForm] = useState({ name: '', email: '', password: '', currency: "GBP" });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const isSignUp = mode === 'signup';
@@ -85,28 +85,28 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-md border border-white/10 bg-[#152420] p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-xl border border-white/10 bg-ink p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-serif text-xl text-[#F8F9F5]">
+          <h2 className="font-serif text-xl text-paper-card">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="rounded-sm p-1 text-white/50 hover:bg-white/10 hover:text-white"
+            className="rounded-md p-1 text-white/50 hover:bg-white/10 hover:text-white"
           >
             <X size={18} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-sm border border-[#D98C82]/30 bg-[#D98C82]/10 px-3 py-2 text-sm text-[#D98C82]">
+          <div className="mb-4 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
             {error}
           </div>
         )}
@@ -120,7 +120,7 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Jane Doe"
-                className="w-full rounded-sm border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#C9A24B] focus:outline-none"
+                className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
               />
             </div>
           )}
@@ -132,7 +132,7 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="you@example.com"
-              className="w-full rounded-sm border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#C9A24B] focus:outline-none"
+              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
             />
           </div>
           <div>
@@ -144,68 +144,67 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="••••••••"
-              className="w-full rounded-sm border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#C9A24B] focus:outline-none"
+              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
             />
           </div>
-           {isSignUp && (
-          <div>
-             {/* <Field label="Currency"> */}
-             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Currency</label>
-                          <Select
-                            options={currencies}
-                            isSearchable
-                            placeholder="Select your currency"
-                            value={currencies.find(
-                              (currency) => currency.value === form.currency
-                            )}
-                            onChange={(selected) =>
-                              setForm({
-                                ...form,
-                                currency: selected.value,
-                              })
-                            }
-                            styles={{
-                              control: (base) => ({
-                                ...base,
-                                backgroundColor: "#1F2937",
-                                borderColor: "#374151",
-                                color: "#fff",
-                                minHeight: "42px",
-                              }),
-                              menu: (base) => ({
-                                ...base,
-                                backgroundColor: "#1F2937",
-                                color: "#fff",
-                              }),
-                              option: (base, state) => ({
-                                ...base,
-                                backgroundColor: state.isFocused
-                                  ? "#374151"
-                                  : "#1F2937",
-                                color: "#fff",
-                                cursor: "pointer",
-                              }),
-                              singleValue: (base) => ({
-                                ...base,
-                                color: "#fff",
-                              }),
-                              input: (base) => ({
-                                ...base,
-                                color: "#fff",
-                              }),
-                              placeholder: (base) => ({
-                                ...base,
-                                color: "#9CA3AF",
-                              }),
-                            }}
-                          />
-                  
-          </div>
-           )}
+          {isSignUp && (
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Currency</label>
+              <Select
+                options={currencies}
+                isSearchable
+                placeholder="Select your currency"
+                value={currencies.find(
+                  (currency) => currency.value === form.currency
+                )}
+                onChange={(selected) =>
+                  setForm({
+                    ...form,
+                    currency: selected.value,
+                  })
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    backgroundColor: "#1E293B",
+                    borderColor: "#334155",
+                    color: "#fff",
+                    minHeight: "42px",
+                    borderRadius: "0.375rem",
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    backgroundColor: "#1E293B",
+                    color: "#fff",
+                  }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isFocused
+                      ? "#334155"
+                      : "#1E293B",
+                    color: "#fff",
+                    cursor: "pointer",
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "#fff",
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: "#fff",
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "#94A3B8",
+                  }),
+                }}
+              />
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-sm bg-[#C9A24B] px-4 py-2.5 text-sm font-medium text-[#152420] transition-colors hover:bg-[#E4CE93] disabled:opacity-50"
+            className="mt-2 w-full rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-light disabled:opacity-50"
           >
             {loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
           </button>
@@ -215,7 +214,7 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             onClick={() => onSwitchMode(isSignUp ? 'signin' : 'signup')}
-            className="text-[#C9A24B] hover:underline"
+            className="text-brand-light hover:underline"
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
           </button>
@@ -226,55 +225,59 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
 }
 
 export default function LandingPage() {
-  const [authModal, setAuthModal] = useState(null); // null | 'signin' | 'signup'
+  const [authModal, setAuthModal] = useState(null);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#152420] font-sans text-[#1B231F]">
+    <div className="h-screen w-screen overflow-hidden bg-ink font-sans text-text-ink">
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
 
-      {/* Page content — blurred and inert while the auth modal is open */}
       <div
-        className={`flex h-full flex-col transition-[filter] duration-200 ${
+        className={`relative flex h-full flex-col transition-[filter] duration-200 ${
           authModal ? 'pointer-events-none blur-md' : ''
         }`}
-        style={{
-          backgroundImage: `
-            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,162,75,0.10), transparent 60%),
-            repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 42px),
-            linear-gradient(160deg, #1A2D27 0%, #152420 45%, #101C18 100%)
-          `,
-        }}
       >
+        {/* Background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/landing-bg.jpg)' }}
+          aria-hidden="true"
+        />
+        {/* Dark overlay for readability */}
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-ink/95 via-ink/85 to-indigo-950/90"
+          aria-hidden="true"
+        />
+
         {/* Nav */}
-        <header className="flex shrink-0 items-center justify-between px-6 py-5 sm:px-10">
+        <header className="relative z-10 flex shrink-0 items-center justify-between px-6 py-5 sm:px-10">
           <div className="flex items-baseline gap-2">
-            <span className="font-serif text-xl font-medium tracking-tight text-[#F8F9F5]">PETS</span>
+            <span className="font-serif text-xl font-medium tracking-tight text-paper-card">PETS</span>
             <span className="hidden text-xs text-white/40 sm:inline">Personal Expenditure Tracking System</span>
           </div>
           <nav className="flex items-center gap-2">
             <button
               onClick={() => setAuthModal('signin')}
-              className="rounded-sm px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C9A24B]"
+              className="rounded-md px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
             >
               Sign in
             </button>
             <button
               onClick={() => setAuthModal('signup')}
-              className="rounded-sm bg-[#C9A24B] px-4 py-2 text-sm font-medium text-[#152420] transition-colors hover:bg-[#E4CE93] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9A24B]"
+              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Sign up
             </button>
           </nav>
         </header>
 
-        {/* Hero — fills remaining space, vertically centered, no page scroll */}
-        <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#C9A24B]">Every pound, one page</p>
-          <h1 className="mt-4 max-w-2xl font-serif text-4xl font-medium leading-[1.12] text-[#F8F9F5] sm:text-5xl">
+        {/* Hero */}
+        <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand-light">Every pound, one page</p>
+          <h1 className="mt-4 max-w-2xl font-serif text-4xl font-medium leading-[1.12] text-paper-card sm:text-5xl">
             Kept like a proper ledger,
             <br className="hidden sm:block" /> not a pile of screenshots.
           </h1>
@@ -286,13 +289,13 @@ export default function LandingPage() {
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => setAuthModal('signup')}
-              className="inline-flex items-center gap-2 rounded-sm bg-[#C9A24B] px-5 py-3 text-sm font-medium text-[#152420] transition-colors hover:bg-[#E4CE93] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9A24B]"
+              className="inline-flex items-center gap-2 rounded-md bg-brand px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Get started free <ArrowUpRight size={16} />
             </button>
             <button
               onClick={() => setAuthModal('signin')}
-              className="rounded-sm border border-white/20 px-5 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C9A24B]"
+              className="rounded-md border border-white/20 px-5 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
             >
               Sign in
             </button>
@@ -309,7 +312,7 @@ export default function LandingPage() {
         </main>
 
         {/* Ledger tape footer strip */}
-        <div className="shrink-0">
+        <div className="relative z-10 shrink-0">
           <LedgerTape />
         </div>
       </div>

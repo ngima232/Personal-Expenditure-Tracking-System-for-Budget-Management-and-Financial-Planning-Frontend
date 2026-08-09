@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html {
-  background-color: #eef1ec;
+  background-color: #F8FAFC;
 }
 
 body {
@@ -19,15 +19,15 @@ body {
 
 .ledger-rule {
   height: 1px;
-  background-image: repeating-linear-gradient(90deg, #d8dbd3 0, #d8dbd3 6px, transparent 6px, transparent 12px);
+  background-image: repeating-linear-gradient(90deg, #E2E8F0 0, #E2E8F0 6px, transparent 6px, transparent 12px);
 }
 
 ::selection {
-  background-color: #c9a24b;
-  color: #152420;
+  background-color: #4F46E5;
+  color: #FFFFFF;
 }
 
 :focus-visible {
-  outline: 2px solid #1f5c52;
+  outline: 2px solid #4F46E5;
   outline-offset: 2px;
 }

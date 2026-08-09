@@ -5,7 +5,7 @@ export function Button({ variant = 'primary', className = '', children, ...props
     primary: 'bg-brand text-paper-card hover:bg-brand-dark',
     ghost: 'bg-transparent text-text-ink hover:bg-line/40',
     danger: 'bg-transparent text-expense hover:bg-expense/10',
-    gold: 'bg-gold text-ink hover:bg-gold-soft',
+    gold: 'bg-gold text-white hover:bg-gold-soft',
   };
   return (
     <button

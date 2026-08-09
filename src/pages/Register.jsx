@@ -117,14 +117,14 @@ export default function Register() {
                 styles={{
                   control: (base) => ({
                     ...base,
-                    backgroundColor: "#1F2937",
-                    borderColor: "#374151",
+                    backgroundColor: "#1E293B",
+                    borderColor: "#334155",
                     color: "#fff",
                     minHeight: "42px",
                   }),
                   menu: (base) => ({
                     ...base,
-                    backgroundColor: "#1F2937",
+                    backgroundColor: "#1E293B",
                     color: "#fff",
                   }),
                   option: (base, state) => ({
@@ -145,7 +145,7 @@ export default function Register() {
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "#9CA3AF",
+                    color: "#94A3B8",
                   }),
                 }}
               />

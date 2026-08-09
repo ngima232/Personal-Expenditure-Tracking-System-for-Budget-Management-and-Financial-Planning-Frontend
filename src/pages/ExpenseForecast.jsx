@@ -39,16 +39,16 @@ export default function ExpenseForecast() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="p-4">
           <p className="text-xs text-text-muted">Total forecast</p>
-          <p className="font-display text-2xl text-text-ink">{formatCurrency(forecast.totalForecast)}</p>
+          <p className="font-display text-2xl text-text-ink">{formatCurrency(forecast.totalForecast) > 0 ?  formatCurrency(forecast.totalForecast) : 'N/A'}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-text-muted">Categories with forecast</p>
-          <p className="font-display text-2xl text-text-ink">{sortedBreakdown.length}</p>
+          <p className="font-display text-2xl text-text-ink">{sortedBreakdown.length > 0 ? sortedBreakdown.length : 'N/A'}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-text-muted">Highest expense</p>
           <p className="font-display text-2xl text-text-ink">
-            {sortedBreakdown.length > 0 ? sortedBreakdown[0].categoryName : '—'}
+            {sortedBreakdown.length > 0 && sortedBreakdown[0]?.forecastedAmount > 0 ? sortedBreakdown[0].categoryName : 'N/A'}
           </p>
         </Card>
       </div>
@@ -68,7 +68,7 @@ export default function ExpenseForecast() {
                 </div>
                 <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-line">
                   <div
-                    className="h-full rounded-full bg-primary transition-all"
+                    className="h-full rounded-full bg-brand transition-all"
                     style={{ width: `${Math.min(percent, 100)}%` }}
                   />
                 </div>
