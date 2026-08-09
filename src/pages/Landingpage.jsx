@@ -10,6 +10,9 @@ import {
   TrendingUp,
   Banknote,
   X,
+  ShieldCheck,
+  Globe,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,19 +32,20 @@ function formatAmount(n) {
 function LedgerTape() {
   const entries = [...TAPE_ENTRIES, ...TAPE_ENTRIES];
   return (
-    <div className="relative overflow-hidden border-y border-white/10 bg-white/5">
-      <div className="tape-track flex w-max gap-8 px-5 py-2.5">
+    <div className="relative overflow-hidden border-t border-white/10 bg-slate-950/60 backdrop-blur-md">
+      <div className="tape-track flex w-max gap-8 px-5 py-3">
         {entries.map((e, i) => (
-          <div key={i} className="flex items-center gap-2 whitespace-nowrap font-mono text-xs">
-            <span className="text-white/40">{e.label}</span>
-            <span className={e.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}>
+          <div key={i} className="flex items-center gap-2.5 whitespace-nowrap font-mono text-xs">
+            <span className="text-slate-400">{e.label}</span>
+            <span className={`font-semibold ${e.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
               {formatAmount(e.amount)}
             </span>
           </div>
         ))}
       </div>
       <style>{`
-        .tape-track { animation: tape-scroll 28s linear infinite; }
+        .tape-track { animation: tape-scroll 32s linear infinite; }
+        .tape-track:hover { animation-play-state: paused; }
         @keyframes tape-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         @media (prefers-reduced-motion: reduce) { .tape-track { animation: none; } }
       `}</style>
@@ -50,11 +54,11 @@ function LedgerTape() {
 }
 
 const FEATURES = [
-  { icon: Wallet, name: 'Budgets' },
-  { icon: PiggyBank, name: 'Savings goals' },
-  { icon: HandCoins, name: 'Loans' },
+  { icon: Wallet, name: 'Smart Budgets' },
+  { icon: PiggyBank, name: 'Savings Goals' },
+  { icon: HandCoins, name: 'Informal Loans' },
   { icon: Banknote, name: 'Investments' },
-  { icon: TrendingUp, name: 'Forecasting' },
+  { icon: TrendingUp, name: 'AI Forecasting' },
 ];
 
 function AuthModal({ mode, onClose, onSwitchMode }) {
@@ -85,28 +89,28 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-xl border border-white/10 bg-ink p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-white/10 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-serif text-xl text-paper-card">
+          <h2 className="font-serif text-xl font-semibold text-white">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md p-1 text-white/50 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           >
             <X size={18} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
+          <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
             {error}
           </div>
         )}
@@ -114,29 +118,29 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
         <form onSubmit={handleSubmit} className="space-y-3.5">
           {isSignUp && (
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Name</label>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50">Name</label>
               <input
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Jane Doe"
-                className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
+                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
             </div>
           )}
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Email</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50">Email</label>
             <input
               type="email"
               required
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="you@example.com"
-              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
+              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Password</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50">Password</label>
             <input
               type="password"
               required
@@ -144,59 +148,43 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="••••••••"
-              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand focus:outline-none"
+              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           {isSignUp && (
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/40">Currency</label>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50">Base Currency</label>
               <Select
                 options={currencies}
                 isSearchable
-                placeholder="Select your currency"
-                value={currencies.find(
-                  (currency) => currency.value === form.currency
-                )}
-                onChange={(selected) =>
-                  setForm({
-                    ...form,
-                    currency: selected.value,
-                  })
-                }
+                placeholder="Select your preferred currency"
+                value={currencies.find((c) => c.value === form.currency)}
+                onChange={(selected) => setForm({ ...form, currency: selected.value })}
                 styles={{
                   control: (base) => ({
                     ...base,
-                    backgroundColor: "#1E293B",
+                    backgroundColor: "#0F172A",
                     borderColor: "#334155",
                     color: "#fff",
                     minHeight: "42px",
-                    borderRadius: "0.375rem",
+                    borderRadius: "0.5rem",
                   }),
                   menu: (base) => ({
                     ...base,
-                    backgroundColor: "#1E293B",
+                    backgroundColor: "#0F172A",
                     color: "#fff",
+                    borderRadius: "0.5rem",
+                    border: "1px solid #334155"
                   }),
                   option: (base, state) => ({
                     ...base,
-                    backgroundColor: state.isFocused
-                      ? "#334155"
-                      : "#1E293B",
+                    backgroundColor: state.isFocused ? "#1E293B" : "#0F172A",
                     color: "#fff",
                     cursor: "pointer",
                   }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: "#fff",
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: "#fff",
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "#94A3B8",
-                  }),
+                  singleValue: (base) => ({ ...base, color: "#fff" }),
+                  input: (base) => ({ ...base, color: "#fff" }),
+                  placeholder: (base) => ({ ...base, color: "#94A3B8" }),
                 }}
               />
             </div>
@@ -204,17 +192,17 @@ function AuthModal({ mode, onClose, onSwitchMode }) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-light disabled:opacity-50"
+            className="mt-2 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:shadow-emerald-500/50 disabled:opacity-50"
           >
             {loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-white/40">
+        <p className="mt-4 text-center text-sm text-white/50">
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             onClick={() => onSwitchMode(isSignUp ? 'signin' : 'signup')}
-            className="text-brand-light hover:underline"
+            className="text-emerald-400 font-medium hover:underline"
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
           </button>
@@ -228,90 +216,104 @@ export default function LandingPage() {
   const [authModal, setAuthModal] = useState(null);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-ink font-sans text-text-ink">
+    <div className="h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
 
       <div
-        className={`relative flex h-full flex-col transition-[filter] duration-200 ${
+        className={`relative flex h-full flex-col transition-[filter] duration-300 ${
           authModal ? 'pointer-events-none blur-md' : ''
         }`}
       >
-        {/* Background image */}
+        {/* Dynamic Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/landing-bg.jpg)' }}
+          className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
+          style={{ backgroundImage: 'url(/landing-bg.png)' }}
           aria-hidden="true"
         />
-        {/* Dark overlay for readability */}
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-ink/95 via-ink/85 to-indigo-950/90"
-          aria-hidden="true"
-        />
+        {/* Glow Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-950/80 to-emerald-950/70" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-emerald-500/15 blur-[120px] rounded-full pointer-events-none" />
 
-        {/* Nav */}
-        <header className="relative z-10 flex shrink-0 items-center justify-between px-6 py-5 sm:px-10">
-          <div className="flex items-baseline gap-2">
-            <span className="font-serif text-xl font-medium tracking-tight text-paper-card">PETS</span>
-            <span className="hidden text-xs text-white/40 sm:inline">Personal Expenditure Tracking System</span>
+        {/* Navigation */}
+        <header className="relative z-10 flex shrink-0 items-center justify-between px-6 py-6 sm:px-12">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold font-serif">
+              P
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif text-xl font-bold tracking-tight text-white">PETS</span>
+              <span className="hidden text-[10px] tracking-wider uppercase text-slate-400 sm:inline">Personal Expenditure Tracking</span>
+            </div>
           </div>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-3">
             <button
               onClick={() => setAuthModal('signin')}
-              className="rounded-md px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
             >
               Sign in
             </button>
             <button
               onClick={() => setAuthModal('signup')}
-              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-500 hover:shadow-emerald-500/40"
             >
-              Sign up
+              Get Started
             </button>
           </nav>
         </header>
 
-        {/* Hero */}
-        <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand-light">Every pound, one page</p>
-          <h1 className="mt-4 max-w-2xl font-serif text-4xl font-medium leading-[1.12] text-paper-card sm:text-5xl">
-            Kept like a proper ledger,
-            <br className="hidden sm:block" /> not a pile of screenshots.
-          </h1>
-          <p className="mt-4 max-w-md text-sm text-white/55 sm:text-base">
-            Budgets that track real spend, savings goals with a history, and a forecast of what
-            next month costs you — before it happens.
-          </p>
+        {/* Hero Section */}
+      {/* Hero Section */}
+<main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
+  {/* Badge */}
+  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-medium text-emerald-300 backdrop-blur-md">
+    <Sparkles size={13} className="text-emerald-400" />
+    <span>Smart Financial Intelligence & Forecasting</span>
+  </div>
 
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => setAuthModal('signup')}
-              className="inline-flex items-center gap-2 rounded-md bg-brand px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              Get started free <ArrowUpRight size={16} />
-            </button>
-            <button
-              onClick={() => setAuthModal('signin')}
-              className="rounded-md border border-white/20 px-5 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
-            >
-              Sign in
-            </button>
-          </div>
+  {/* Heading */}
+  <h1 className="mt-6 max-w-3xl font-serif text-4xl font-semibold tracking-tight text-white sm:text-6xl sm:leading-[1.15]">
+    Master your wealth with total clarity & predictive forecasting.
+  </h1>
 
-          <div className="mt-8 flex items-center gap-6 text-white/35">
-            {FEATURES.map(({ icon: Icon, name }) => (
-              <div key={name} className="flex items-center gap-1.5 text-xs">
-                <Icon size={14} strokeWidth={1.75} />
-                <span className="hidden sm:inline">{name}</span>
-              </div>
-            ))}
-          </div>
-        </main>
+  {/* Subheading */}
+  <p className="mt-5 max-w-xl text-base text-slate-300/80 sm:text-lg">
+    Effortlessly control your income, budgets, loans, and investments in your preferred currency. Forecast your financial future powered by your real transaction trends.
+  </p>
 
-        {/* Ledger tape footer strip */}
+  {/* CTAs */}
+  <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+    <button
+      onClick={() => setAuthModal('signup')}
+      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:scale-[1.02]"
+    >
+      Start Tracking Free <ArrowUpRight size={16} />
+    </button>
+    <button
+      onClick={() => setAuthModal('signin')}
+      className="rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-slate-200 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white hover:border-white/25"
+    >
+      Explore Dashboard
+    </button>
+  </div>
+
+  {/* Features Pill Strip */}
+  <div className="mt-12 flex flex-wrap items-center justify-center gap-2 max-w-2xl">
+    {FEATURES.map(({ icon: Icon, name }) => (
+      <div 
+        key={name} 
+        className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300 backdrop-blur-md transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
+      >
+        <Icon size={14} className="text-emerald-400" />
+        <span>{name}</span>
+      </div>
+    ))}
+  </div>
+</main>
+        {/* Ledger Tape Footer */}
         <div className="relative z-10 shrink-0">
           <LedgerTape />
         </div>
