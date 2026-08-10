@@ -8,7 +8,7 @@ const PAGE_SIZE = 15;
 
 const emptyForm = {
   name: '',
-  type: 'share',
+  type: 'STOCK',
   amount: '',
   remarks: '',
   date: formatDateInput(),
@@ -253,21 +253,21 @@ export default function Investments() {
     }
   >
     <option value="">All types</option>
-    <option value="STOCK">Stock</option>
-    <option value="ETF">ETF</option>
-    <option value="MUTUAL_FUND">Mutual Fund</option>
-    <option value="BOND">Bond</option>
-    <option value="FIXED_DEPOSIT">Fixed Deposit</option>
-    <option value="GOLD">Gold</option>
-    <option value="SILVER">Silver</option>
-    <option value="REAL_ESTATE">Real Estate</option>
-    <option value="CRYPTO">Cryptocurrency</option>
-    <option value="PENSION">Pension</option>
-    <option value="PROVIDENT_FUND">Provident Fund</option>
-    <option value="BUSINESS">Business</option>
-    <option value="STARTUP">Startup</option>
-    <option value="COMMODITY">Commodity</option>
-    <option value="OTHER">Other</option>
+    <option value="STOCK">STOCK</option>
+<option value="ETF">ETF</option>
+<option value="MUTUAL_FUND">MUTUAL_FUND</option>
+<option value="BOND">BOND</option>
+<option value="FIXED_DEPOSIT">FIXED_DEPOSIT</option>
+<option value="GOLD">GOLD</option>
+<option value="SILVER">SILVER</option>
+<option value="REAL_ESTATE">REAL_ESTATE</option>
+<option value="CRYPTO">CRYPTO</option>
+<option value="PENSION">PENSION</option>
+<option value="PROVIDENT_FUND">PROVIDENT_FUND</option>
+<option value="BUSINESS">BUSINESS</option>
+<option value="STARTUP">STARTUP</option>
+<option value="COMMODITY">COMMODITY</option>
+<option value="OTHER">OTHER</option>
   </Select>
 </div>
                   
@@ -369,21 +369,21 @@ export default function Investments() {
             <Field label="Type">
               <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
               
-                <option value="STOCK">Stock</option>
-                <option value="ETF">ETF</option>
-                <option value="MUTUAL_FUND">Mutual Fund</option>
-                <option value="BOND">Bond</option>
-                <option value="FIXED_DEPOSIT">Fixed Deposit</option>
-                <option value="GOLD">Gold</option>
-                <option value="SILVER">Silver</option>
-                <option value="REAL_ESTATE">Real Estate</option>
-                <option value="CRYPTO">Cryptocurrency</option>
-                <option value="PENSION">Pension</option>
-                <option value="PROVIDENT_FUND">Provident Fund</option>
-                <option value="BUSINESS">Business</option>
-                <option value="STARTUP">Startup</option>
-                <option value="COMMODITY">Commodity</option>
-                <option value="OTHER">Other</option>
+                <option value="STOCK">STOCK</option>
+<option value="ETF">ETF</option>
+<option value="MUTUAL_FUND">MUTUAL_FUND</option>
+<option value="BOND">BOND</option>
+<option value="FIXED_DEPOSIT">FIXED_DEPOSIT</option>
+<option value="GOLD">GOLD</option>
+<option value="SILVER">SILVER</option>
+<option value="REAL_ESTATE">REAL_ESTATE</option>
+<option value="CRYPTO">CRYPTO</option>
+<option value="PENSION">PENSION</option>
+<option value="PROVIDENT_FUND">PROVIDENT_FUND</option>
+<option value="BUSINESS">BUSINESS</option>
+<option value="STARTUP">STARTUP</option>
+<option value="COMMODITY">COMMODITY</option>
+<option value="OTHER">OTHER</option>
               </Select>
             </Field>
           </div>
