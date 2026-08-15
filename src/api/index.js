@@ -5,6 +5,8 @@ import { apiClient } from './client';
 export const authApi = {
   login: (credentials) => apiClient.post('/auth/login', credentials),
   register: (payload) => apiClient.post('/auth/register', payload),
+  forgotPassword: (payload) => apiClient.post('/auth/forgot-password', payload),
+  resetPassword: (payload) => apiClient.post('/auth/change-password', payload),
   me: () => apiClient.get('/auth/me'),
 };
 

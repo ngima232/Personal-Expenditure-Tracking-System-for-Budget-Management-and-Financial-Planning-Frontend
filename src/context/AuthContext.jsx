@@ -61,6 +61,18 @@ export function AuthProvider({ children }) {
    // return applySession(res);
   }, []);
 
+  const forgotPassword = useCallback(async (payload) => {
+    console.log(" auth forgotPassword called ")
+    const res = await authApi.forgotPassword(payload);
+   // return applySession(res);
+  }, []);
+
+    const resetPassword = useCallback(async (payload) => {
+    const res = await authApi.resetPassword(payload);
+   // return applySession(res);
+  }, []);
+
+
   const logout = useCallback(() => {
     localStorage.removeItem('ledger_token');
     localStorage.removeItem('ledger_refresh_token');
@@ -69,7 +81,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout ,forgotPassword,resetPassword}}>
       {children}
     </AuthContext.Provider>
   );
