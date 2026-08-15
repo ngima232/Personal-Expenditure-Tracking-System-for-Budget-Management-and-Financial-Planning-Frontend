@@ -72,6 +72,33 @@ export function AuthProvider({ children }) {
    // return applySession(res);
   }, []);
 
+const refreshUser = async (id) => {
+  try {
+    const response = await authApi.me(id);
+
+    const latestUser =
+      response?.data?.user ||
+      response?.data;
+
+    const safeUser = sanitizeUser(latestUser);
+
+    setUser(safeUser);
+
+    localStorage.setItem(
+      'ledger_user',
+      JSON.stringify(safeUser)
+    );
+
+    return safeUser;
+  } catch (error) {
+    console.error(
+      'Failed to refresh user:',
+      error
+    );
+
+    throw error;
+  }
+};
 
   const logout = useCallback(() => {
     localStorage.removeItem('ledger_token');
@@ -81,7 +108,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout ,forgotPassword,resetPassword}}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout ,forgotPassword,resetPassword,refreshUser}}>
       {children}
     </AuthContext.Provider>
   );

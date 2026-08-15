@@ -7,9 +7,14 @@ export const authApi = {
   register: (payload) => apiClient.post('/auth/register', payload),
   forgotPassword: (payload) => apiClient.post('/auth/forgot-password', payload),
   resetPassword: (payload) => apiClient.post('/auth/change-password', payload),
-  me: () => apiClient.get('/auth/me'),
+  me: (id) => apiClient.get(`/auth/me/${id}`),
 };
 
+export const usersApi = {
+
+  updateProfile: (id, payload) =>apiClient.patch(`/user/${id}`, payload),
+
+};
 // --- Categories ---
 export const categoriesApi = {
   list: (params) => apiClient.get('/categories', params),

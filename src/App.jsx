@@ -11,6 +11,7 @@ import Loans from './pages/Loans';
 import Investments from './pages/investments';
 import ExpenseForecast from './pages/ExpenseForecast'
 import LandingPage from './pages/LandingPage';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/loans" element={<Loans />} />
         <Route path="/investments" element={<Investments />} />
         <Route path="/expense-forecast" element={<ExpenseForecast />} />
+        <Route path="/profile" element={<Profile />}/>
          
       </Route>
 
